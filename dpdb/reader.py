@@ -1,6 +1,9 @@
 import logging
 import re
 import sys
+import lib.eclingo.eclingo.main as eclingo
+from pprint import pprint
+
 
 logger = logging.getLogger(__name__)
 
@@ -379,3 +382,41 @@ class EdgeReader(DimacsReader):
 
         if len(self.edges) != self.num_edges * 2:
             logger.warning("Effective number of edges mismatch preamble (%d vs %d)", len(self.edges)/2, self.num_edges)
+
+class ELPReader(Reader):
+    def __init__(self):
+        self.atoms = set()
+        self.epistemic_atoms = set()
+        self.output_atoms = []
+        self.rules = []
+
+    def parse(self, string):
+        eclingo_control = eclingo.Control(optimization=0)
+        eclingo_control.add(string)
+        eclingo_control.parse()
+
+        print (eclingo_control._epistemic_atoms)
+
+        # print grounded program
+        print("------------------------------------------------------------")
+        print("   Grounded Program")
+        print("------------------------------------------------------------")
+        pprint(eclingo_control.ground_program.objects)
+        print(eclingo_control.ground_program)
+        self.atoms = eclingo_control._candidates_gen.symbolic_atoms
+
+        for o in eclingo_control.ground_program.objects:
+            if isinstance(o, eclingo.ClingoRule):
+                self.rules.append(o)
+                print ("Rule: " + str(o.head) + " :- " + str(o.body))
+            elif isinstance(o, eclingo.ClingoOutputAtom):
+                self.output_atoms.append(o)
+                # print ("Atom: " + str(o.atom))
+                # print (o.symbol)
+                if(o.symbol in eclingo_control._epistemic_atoms.keys()):
+                    self.epistemic_atoms.add(o.atom)
+                    # print ("epi: ")
+                    # print (o.symbol)
+
+
+

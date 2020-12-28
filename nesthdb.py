@@ -2,17 +2,29 @@
 # -*- coding: future_fstrings -*-
 import importlib
 import logging
+import os
 import sys
+import inspect
 import tempfile
-
 from collections import defaultdict
+
+src_path = os.path.abspath(os.path.realpath(inspect.getfile(inspect.currentframe())))
+sys.path.insert(0, os.path.realpath(os.path.join(src_path, '..')))
+
+src_path = os.path.realpath(os.path.join(src_path, '../lib'))
+libs = ['eclingo/eclingo']
+
+if src_path not in sys.path:
+    for lib in libs:
+        sys.path.insert(0, os.path.join(src_path, lib))
 
 from common import *
 from dpdb.abstraction import MinorGraph, ClingoControl
 from dpdb.db import BlockingThreadedConnectionPool, DBAdmin, DEBUG_SQL, setup_debug_sql
 from dpdb.problems.nestpmc import NestPmc
 from dpdb.problems.sat_util import *
-from dpdb.reader import CnfReader
+from dpdb.problems.elp_util import *
+from dpdb.reader import CnfReader, ELPReader
 from dpdb.writer import FileWriter, StreamWriter, denormalize_cnf, normalize_cnf
 
 logger = logging.getLogger("nestHDB")
@@ -35,6 +47,20 @@ class Formula:
         # uncomment the following line for sharpsat solving
         #input.projected = set(range(1,input.num_vars+1)) - input.single_vars		#sharpsat!
         return cls(input.vars, input.clauses, input.projected)
+
+class ELP:
+    def __init__(self, atoms, epistemic_atom, output_atoms, rules):
+        self.atoms = atoms
+        self.epistemic_atoms = epistemic_atom
+        self.output_atoms = output_atoms
+        self.rules = rules
+        self.atom_rule_dict = defaultdict(set)
+
+    @classmethod
+    def from_file(cls, fname):
+        input = ELPReader.from_file(fname)
+        return cls(input.atoms, input.epistemic_atoms, input.output_atoms, input.rules)
+
 
 class Graph:
     def __init__(self, nodes, edges, adj_list):
@@ -246,6 +272,7 @@ class Problem:
             return cache[frozen_clauses]
         else:
             return None
+
     def nestedpmc(self):
         global cfg
 
@@ -277,7 +304,7 @@ class Problem:
 
     def solve(self):
         logger.info(f"Original #vars: {self.formula.num_vars}, #clauses: {self.formula.num_clauses}, #projected: {len(self.projected_orig)}, depth: {self.depth}")
-        self.preprocess()
+        #self.preprocess()
         if self.maybe_sat == False:
             logger.info("Preprocessor UNSAT")
             return 0
@@ -346,6 +373,101 @@ class Problem:
             if self.active_process.poll() is None:
                 self.active_process.send_signal(signal.SIGTERM)
 
+
+class ELPProblem(Problem):
+    def __init__(self, elp, non_nested, depth=0, **kwargs):
+        self.elp = elp
+        self.non_nested = non_nested
+        self.non_nested_orig = non_nested
+        self.depth = depth
+        self.kwargs = kwargs
+        self.sub_problems = set()
+        self.nested_problem = None
+        self.active_process = None
+
+    def preprocess(self):
+        return
+
+    def decompose_nested_primal(self):
+        atoms, edges = elp2primal(self.elp.atoms, self.elp.rules, self.elp.atom_rule_dict, False)
+        print (edges)
+        # num_vars, edges, adj = cnf2primal(self.formula.num_vars, self.formula.clauses, self.formula.var_clause_dict, True)
+        # self.graph = Graph(set(self.formula.vars), edges, adj)
+        # logger.info(f"Primal graph #vertices: {num_vars}, #edges: {len(edges)}")
+        # self.graph.abstract(self.non_nested)
+        # logger.info(f"Nested primal graph #vertices: {self.graph.num_nodes}, #edges: {self.graph.num_edges}")
+        # self.graph.decompose(**self.kwargs)
+        return
+
+    def choose_subset(self):
+        return
+
+    def call_solver(self, type):
+        return
+
+    def solve_classic(self):
+        return
+
+    #TODO
+    def get_cached(self):
+        # frozen_rules = frozenset([frozenset(c) for c in self.program.rules])
+        # if frozen_rules in cache:
+        #     return cache[frozen_rules]
+        # else:
+        #     return None
+        return None
+
+    def nestedpmc(self):
+        return
+
+    def solve(self):
+        logger.info(f"Original")
+        self.preprocess()
+
+        # TODO: set to epistemic
+        #self.non_nested = self.non_nested.intersection(self.projected)
+
+        if not self.kwargs["no_cache"]:
+            cached = self.get_cached()
+            if cached != None:
+                logger.info(f"Cache hit: {cached}")
+                return cached
+
+        # no epistemic -> asp solve
+        # if len(self.projected.intersection(self.formula.vars)) == 0:
+        #     logger.info("Intersection of vars and projected is empty")
+        #     return self.final_result(self.call_solver("sat"))
+
+        # max recursion depth -> classic solve
+        if self.depth >= cfg["nesthdb"]["max_recursion_depth"]:
+            return self.final_result(self.solve_classic())
+
+        self.decompose_nested_primal()
+
+
+        return
+
+    def solve_rec(self, vars, clauses, non_nested, projected, depth=0, **kwargs):
+        if interrupted:
+            return -1
+        # TODO: change constructor to represent sub-problem
+        p = ELPProblem(None, non_nested, depth, **kwargs)
+        self.sub_problems.add(p)
+        result = p.solve()
+        self.sub_problems.remove(p)
+        return result
+
+    def interrupt(self):
+        logger.warning("Problem interrupted")
+        interrupted = True
+        if self.nested_problem != None:
+            self.nested_problem.interrupt()
+        for p in list(self.sub_problems):
+            p.interrupt()
+        if self.active_process != None:
+            if self.active_process.poll() is None:
+                self.active_process.send_signal(signal.SIGTERM)
+
 def read_input(fname):
     input = CnfReader.from_file(fname)
     return input.num_vars, input.vars, input.num_clauses, input.clauses, input.projected
@@ -358,8 +480,11 @@ def main():
     cfg = read_cfg(args.config)
     fname = args.file
 
-    formula = Formula.from_file(fname)
-    prob = Problem(formula,formula.vars,**vars(args))
+    # formula = Formula.from_file(fname)
+    # prob = Problem(formula,formula.vars,**vars(args))
+    elp = ELP.from_file(fname)
+    print (elp.rules)
+    prob = ELPProblem(elp,None,**vars(args))
 
     def signal_handler(sig, frame):
         if sig == signal.SIGUSR1:
