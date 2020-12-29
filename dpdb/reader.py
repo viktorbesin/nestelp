@@ -387,36 +387,30 @@ class ELPReader(Reader):
     def __init__(self):
         self.atoms = set()
         self.epistemic_atoms = set()
-        self.output_atoms = []
-        self.rules = []
+        self.clingo_output_atoms = []
+        self.clingo_rules = []
 
     def parse(self, string):
         eclingo_control = eclingo.Control(optimization=0)
         eclingo_control.add(string)
         eclingo_control.parse()
 
-        print (eclingo_control._epistemic_atoms)
-
         # print grounded program
         print("------------------------------------------------------------")
         print("   Grounded Program")
         print("------------------------------------------------------------")
         pprint(eclingo_control.ground_program.objects)
-        print(eclingo_control.ground_program)
-        self.atoms = eclingo_control._candidates_gen.symbolic_atoms
+        # print(eclingo_control.ground_program)
+        # self.atoms = eclingo_control._candidates_gen.symbolic_atoms
 
         for o in eclingo_control.ground_program.objects:
             if isinstance(o, eclingo.ClingoRule):
-                self.rules.append(o)
-                print ("Rule: " + str(o.head) + " :- " + str(o.body))
+                self.clingo_rules.append(o)
             elif isinstance(o, eclingo.ClingoOutputAtom):
-                self.output_atoms.append(o)
-                # print ("Atom: " + str(o.atom))
-                # print (o.symbol)
+                self.clingo_output_atoms.append(o)
+                self.atoms.add(o.atom)
                 if(o.symbol in eclingo_control._epistemic_atoms.keys()):
                     self.epistemic_atoms.add(o.atom)
-                    # print ("epi: ")
-                    # print (o.symbol)
 
 
 

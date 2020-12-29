@@ -49,17 +49,17 @@ class Formula:
         return cls(input.vars, input.clauses, input.projected)
 
 class ELP:
-    def __init__(self, atoms, epistemic_atom, output_atoms, rules):
+    def __init__(self, atoms, epistemic_atoms, clingo_output_atoms, rules):
         self.atoms = atoms
-        self.epistemic_atoms = epistemic_atom
-        self.output_atoms = output_atoms
+        self.epistemic_atoms = epistemic_atoms
+        self.clingo_output_atoms = clingo_output_atoms
         self.rules = rules
         self.atom_rule_dict = defaultdict(set)
 
     @classmethod
     def from_file(cls, fname):
         input = ELPReader.from_file(fname)
-        return cls(input.atoms, input.epistemic_atoms, input.output_atoms, input.rules)
+        return cls(input.atoms, input.epistemic_atoms, input.clingo_output_atoms, input.clingo_rules)
 
 
 class Graph:
@@ -377,27 +377,26 @@ class Problem:
 class ELPProblem(Problem):
     def __init__(self, elp, non_nested, depth=0, **kwargs):
         self.elp = elp
-        self.non_nested = non_nested
+        self.non_nested = set()
         self.non_nested_orig = non_nested
         self.depth = depth
         self.kwargs = kwargs
         self.sub_problems = set()
         self.nested_problem = None
         self.active_process = None
+        for epistemic in self.elp.epistemic_atoms:
+            self.non_nested.add(epistemic)
+
 
     def preprocess(self):
         return
 
     def decompose_nested_primal(self):
-        atoms, edges = elp2primal(self.elp.atoms, self.elp.rules, self.elp.atom_rule_dict, False)
-        print (edges)
-        # num_vars, edges, adj = cnf2primal(self.formula.num_vars, self.formula.clauses, self.formula.var_clause_dict, True)
-        # self.graph = Graph(set(self.formula.vars), edges, adj)
-        # logger.info(f"Primal graph #vertices: {num_vars}, #edges: {len(edges)}")
-        # self.graph.abstract(self.non_nested)
-        # logger.info(f"Nested primal graph #vertices: {self.graph.num_nodes}, #edges: {self.graph.num_edges}")
-        # self.graph.decompose(**self.kwargs)
-        return
+        atoms, edges, adj = elp2primal(self.elp.atoms, self.elp.rules, self.elp.atom_rule_dict, True)
+        self.graph = Graph(self.elp.atoms, edges, adj)
+        logger.info(f"Primal graph #vertices: {len(atoms)}, #edges: {len(edges)}")
+        self.graph.abstract(self.non_nested)
+        logger.info(f"Nested primal graph #vertices: {self.graph.num_nodes}, #edges: {self.graph.num_edges}")
 
     def choose_subset(self):
         return
@@ -421,7 +420,6 @@ class ELPProblem(Problem):
         return
 
     def solve(self):
-        logger.info(f"Original")
         self.preprocess()
 
         # TODO: set to epistemic
@@ -443,7 +441,6 @@ class ELPProblem(Problem):
             return self.final_result(self.solve_classic())
 
         self.decompose_nested_primal()
-
 
         return
 
@@ -483,7 +480,6 @@ def main():
     # formula = Formula.from_file(fname)
     # prob = Problem(formula,formula.vars,**vars(args))
     elp = ELP.from_file(fname)
-    print (elp.rules)
     prob = ELPProblem(elp,None,**vars(args))
 
     def signal_handler(sig, frame):

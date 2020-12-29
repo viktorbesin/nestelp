@@ -23,13 +23,13 @@ def _path_between(i, j, edges):
     #     for
     # else:
 
-def elp2primal (atoms, rules, atom_rule_dict = defaultdict(set), ret_adj=False):
+def elp2primal (atoms_orig, rules, atom_rule_dict = defaultdict(set), ret_adj=False):
     edges = set([])
     adj = {}
 
     for rule in rules:
         # TODO: abs() needed? what about ~a(X)?
-        atoms = [atom for atom in rule.head+rule.body]
+        atoms = [abs(atom) for atom in rule.head+rule.body]
         rule_set = hashabledict({frozenset(atoms): frozenset(rule.head+rule.body)})
         for i in atoms:
             atom_rule_dict[i].add(rule_set)
@@ -37,23 +37,8 @@ def elp2primal (atoms, rules, atom_rule_dict = defaultdict(set), ret_adj=False):
                 _add_directed_edge(edges,adj,i,j)
                 _add_directed_edge(edges,adj,j,i)
 
-    # if ret_adj:
-    #     return (atoms, edges, adj)
-    # else:
-    return (atoms, edges)
-
-def elp2epistemicprimal (epistemic_atoms, atoms, rules, atom_rule_dict = defaultdict(set), ret_adj=False):
-    primal_atoms, primal_edges = elp2primal(atoms, rules, atom_rule_dict, False)
-    edges = set([])
-    adj = {}
-    for i in epistemic_atoms:
-        for j in epistemic_atoms:
-            if _path_between(i, j, primal_edges):
-                _add_directed_edge(edges,adj,i,j)
-                _add_directed_edge(edges,adj,j,i)
-
     if ret_adj:
-        return (epistemic_atoms, edges, adj)
+        return (atoms_orig, edges, adj)
     else:
-        return (epistemic_atoms, edges)
+        return (atoms_orig, edges)
 
