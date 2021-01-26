@@ -47,7 +47,7 @@
   },
   "nesthdb": {
     "threshold_hybrid": 45,
-    "threshold_abstract": 8,
+    "threshold_abstract": 0,
     "max_recursion_depth": 1,
     "sat_solver": {
       "path": "<PATH-TO-PICOSAT>/picosat-965",
@@ -86,6 +86,16 @@
           "timeout": 10
         }
       ]
+    },
+    "elp_solver": {
+      "path": "eclingo",
+      "output_parser": {
+        "class": "RegExReader",
+        "args": {
+          "pattern": "(SATISFIABLE|UNSATISFIABLE)"
+        },
+        "result": "result"
+      }
     }
   }
 }

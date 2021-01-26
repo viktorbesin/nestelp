@@ -397,15 +397,74 @@ class ELPProblem(Problem):
         logger.info(f"Primal graph #vertices: {len(atoms)}, #edges: {len(edges)}")
         self.graph.abstract(self.non_nested)
         logger.info(f"Nested primal graph #vertices: {self.graph.num_nodes}, #edges: {self.graph.num_edges}")
+        self.graph.decompose(**self.kwargs)
 
     def choose_subset(self):
-        return
+        super().choose_subset()
 
     def call_solver(self, type):
-        return
+        global cfg
+
+        # logger.info(f"Call solver: {type} with #vars {self.formula.num_vars}, #clauses {len(self.formula.clauses)}, #projected {len(self.projected)}")
+
+        cfg_str = f"{type}_solver"
+        assert(cfg_str in cfg["nesthdb"])
+        assert("path" in cfg["nesthdb"][cfg_str])
+        local_cfg = cfg["nesthdb"][cfg_str]
+        solver = [local_cfg["path"]]
+
+        if "args" in local_cfg:
+            solver.extend(local_cfg["args"].split(' '))
+        if "output_parser" in local_cfg:
+            solver_parser = local_cfg["output_parser"]
+            reader_module = importlib.import_module("dpdb.reader")
+            solver_parser_cls = getattr(reader_module, solver_parser["class"])
+        else:
+            # TODO
+            solver_parser = {"class":"CnfReader","args":{"silent":True},"result":"models"}
+            solver_parser_cls = CnfReader
+
+        tmp = tempfile.NamedTemporaryFile().name
+        with FileWriter(tmp) as fw:
+            fw.write_elp(self.elp.atoms, self.elp.epistemic_atoms, self.elp.clingo_output_atoms, self.elp.rules)
+            # for i in range(0,128,1):
+            if interrupted:
+                return -1
+            self.active_process = psolver = subprocess.Popen(solver + [tmp], stdout=subprocess.PIPE)
+            output = solver_parser_cls.from_stream(psolver.stdout,**solver_parser["args"])
+            psolver.wait()
+            psolver.stdout.close()
+            self.active_process = None
+            if interrupted:
+                return -1
+
+            result = getattr(output,solver_parser["result"])
+            # check return codes
+            # if psat.returncode == 245 or psat.returncode == 250:
+            #     logger.debug("Retrying call to external solver, returncode {}, index {}".format(psat.returncode, i))
+            # else:
+            #     logger.debug("No Retry, returncode {}, result {}, index {}".format(psat.returncode, result, i))
+            #     break
+
+        logger.info(f"Solver {type} result: {result}")
+        return result
 
     def solve_classic(self):
-        return
+        if interrupted:
+            return -1
+        # call ASP solver if no epistemics are left?
+        # if self.formula.vars == self.projected:
+        #     return self.call_solver("sharpsat")
+        # else:
+        return self.call_solver("elp")
+
+    def final_result(self,result):
+        final = result
+        #TODO
+        # if not self.kwargs["no_cache"]:
+        #     frozen_clauses = frozenset([frozenset(c) for c in self.formula.clauses])
+        #     cache[frozen_clauses] = final
+        return final
 
     #TODO
     def get_cached(self):
@@ -441,6 +500,22 @@ class ELPProblem(Problem):
             return self.final_result(self.solve_classic())
 
         self.decompose_nested_primal()
+
+        if interrupted:
+            return -1
+
+        if self.depth > 0 and self.graph.tree_decomp.tree_width >= cfg["nesthdb"]["threshold_hybrid"]: #TODO OR PROJECTION SIZE BELOW TRESHOLD OR CLAUSE SIZE BELOW TRESHOLD
+            logger.info("Tree width >= hybrid threshold ({})".format(cfg["nesthdb"]["threshold_hybrid"]))
+            return self.final_result(self.solve_classic())
+
+        if self.graph.tree_decomp.tree_width >= cfg["nesthdb"]["threshold_abstract"]:
+            logger.info("Tree width >= abstract threshold ({})".format(cfg["nesthdb"]["threshold_abstract"]))
+            self.choose_subset()
+            logger.info(f"Subset #non-nested: {len(self.non_nested)}")
+            self.decompose_nested_primal()
+            if self.graph.tree_decomp.tree_width >= cfg["nesthdb"]["threshold_abstract"]:
+                logger.info("Tree width after abstraction >= abstract threshold ({})".format(cfg["nesthdb"]["threshold_abstract"]))
+                return self.final_result(self.solve_classic())
 
         return
 
@@ -499,7 +574,7 @@ def main():
     signal.signal(signal.SIGUSR1, signal_handler)
 
     result = prob.solve()
-    logger.info(f"PMC: {result}")
+    logger.info(f"ELP: {result}")
 
 if __name__ == "__main__":
     main()

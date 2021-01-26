@@ -78,6 +78,25 @@ class Writer(object):
         for c in clauses:
             self.writeline("{} 0".format(" ".join(map(str,c))))
         self.flush()
+
+    def write_elp(self, atoms, epistemic_atoms, clingo_output_atoms, clingo_rules):
+        for r in clingo_rules:
+            if (r.body == []):
+                self.writeline(f"{','.join([self._get_symbol_for_atom(ha, clingo_output_atoms) for ha in r.head])}.")
+            else:
+                self.writeline(f"{','.join([self._get_symbol_for_atom(ha, clingo_output_atoms) for ha in r.head])} :- "
+                       f"{','.join([self._get_symbol_for_atom(ba, clingo_output_atoms) for ba in r.body])}.")
+        self.flush()
+
+    def _get_symbol_for_atom(self, atom, clingo_output_atoms):
+        # eclingo uses 0 for 1 in OutputAtoms...
+        if atom == 1:
+            atom = 0
+        for coa in clingo_output_atoms:
+            if atom == coa.atom:
+                return str(coa.symbol)
+            if (-1 * atom) == coa.atom:
+                return "not " + str(coa.symbol)
         
 class StreamWriter(Writer):
     def __init__(self, stream):

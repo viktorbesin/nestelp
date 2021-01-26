@@ -400,7 +400,7 @@ class ELPReader(Reader):
         print("   Grounded Program")
         print("------------------------------------------------------------")
         pprint(eclingo_control.ground_program.objects)
-        # print(eclingo_control.ground_program)
+        print(eclingo_control.ground_program)
         # self.atoms = eclingo_control._candidates_gen.symbolic_atoms
 
         for o in eclingo_control.ground_program.objects:
