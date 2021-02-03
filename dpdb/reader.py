@@ -3,7 +3,7 @@ import re
 import sys
 import lib.eclingo.eclingo.main as eclingo
 from pprint import pprint
-
+from collections import defaultdict
 
 logger = logging.getLogger(__name__)
 
@@ -387,8 +387,10 @@ class ELPReader(Reader):
     def __init__(self):
         self.atoms = set()
         self.epistemic_atoms = set()
-        self.clingo_output_atoms = []
         self.clingo_rules = []
+        self.facts = set()
+        self.var_symbol_dict = {}
+        self.epistemic_symbols = []
 
     def parse(self, string):
         eclingo_control = eclingo.Control(optimization=0)
@@ -399,18 +401,66 @@ class ELPReader(Reader):
         print("------------------------------------------------------------")
         print("   Grounded Program")
         print("------------------------------------------------------------")
-        pprint(eclingo_control.ground_program.objects)
-        print(eclingo_control.ground_program)
+        # pprint(eclingo_control.ground_program.objects)
+        # print(eclingo_control.ground_program)
         # self.atoms = eclingo_control._candidates_gen.symbolic_atoms
 
+        for epistemic_atom in eclingo_control._epistemic_atoms.keys():
+            # eclingo grounds using auxilary-atoms; replace those to keep the original (but grounded) elp
+            # if str(epistemic_atom).startswith("aux_"):
+            #     self.epistemic_symbols.append(str(epistemic_atom)[4:])
+            self.epistemic_symbols.append(str(epistemic_atom))
+
         for o in eclingo_control.ground_program.objects:
+            # Rules
             if isinstance(o, eclingo.ClingoRule):
+                # if (o.body == [] and len(o.head) == 1):
+                #     self.facts.append(o)
                 self.clingo_rules.append(o)
+            # OutputAtoms
             elif isinstance(o, eclingo.ClingoOutputAtom):
-                self.clingo_output_atoms.append(o)
+                # remove _atom_to_be_released from atoms
+                if (str(o.symbol) == "_atom_to_be_released"):
+                    continue
+                if(o.atom != 0):
+                    self.var_symbol_dict[o.atom] = str(o.symbol)
+                else:
+                    self.facts.add(o.symbol)
                 self.atoms.add(o.atom)
                 if(o.symbol in eclingo_control._epistemic_atoms.keys()):
                     self.epistemic_atoms.add(o.atom)
 
+        # remove all auxilary-related rules which were added by eclingo
+        self.clingo_rules = [item for item in self.clingo_rules if not (len(item.head) == 1 and item.head[0] in self.epistemic_atoms)]
+        # set not-auxilary atoms and auxilary-atoms to be the same
+        remove = []
+        to_change = dict(self.var_symbol_dict)
+        for atom in self.atoms:
+            if atom != 0 and f"aux_{self.var_symbol_dict[atom]}" in self.epistemic_symbols:
+                # set to correct atom in rules
+                aux_atom = -1
+                for a, symbol in self.var_symbol_dict.items():
+                    if symbol == f"aux_{self.var_symbol_dict[atom]}":
+                        aux_atom = a
+                        to_change[a] = self.var_symbol_dict[atom]
+                for r in self.clingo_rules:
+                    if atom in r.head:
+                        r.head.remove(atom)
+                        r.head.append(aux_atom)
+                    if atom in r.body:
+                        r.body.remove(atom)
+                        r.body.append(aux_atom)
 
+                # remove other atom
+                remove.append(atom)
+                to_change.pop(atom)
+
+        self.atoms = set([item for item in self.atoms if item != 0 and item not in remove])
+        self.var_symbol_dict = to_change
+
+        print (self.clingo_rules)
+        print (self.var_symbol_dict)
+        print (self.atoms)
+        print (self.facts)
+        print (self.epistemic_atoms)
 

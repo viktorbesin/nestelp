@@ -23,16 +23,15 @@ def _path_between(i, j, edges):
     #     for
     # else:
 
-def elp2primal (atoms_orig, rules, atom_rule_dict = defaultdict(set), ret_adj=False):
+def elp2primal (atoms_orig, rules, var_rule_dict = defaultdict(set), ret_adj=False):
     edges = set([])
     adj = {}
 
     for rule in rules:
-        # TODO: abs() needed? what about ~a(X)?
         atoms = [abs(atom) for atom in rule.head+rule.body]
         rule_set = hashabledict({frozenset(atoms): frozenset(rule.head+rule.body)})
         for i in atoms:
-            atom_rule_dict[i].add(rule_set)
+            var_rule_dict[i].add(rule_set)
             for j in atoms:
                 _add_directed_edge(edges,adj,i,j)
                 _add_directed_edge(edges,adj,j,i)

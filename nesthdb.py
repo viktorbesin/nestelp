@@ -49,17 +49,19 @@ class Formula:
         return cls(input.vars, input.clauses, input.projected)
 
 class ELP:
-    def __init__(self, atoms, epistemic_atoms, clingo_output_atoms, rules):
+    def __init__(self, atoms, clingo_rules, facts, epistemic_atoms, var_symbol_dict):
         self.atoms = atoms
+        self.clingo_rules = clingo_rules
+        self.facts = facts
         self.epistemic_atoms = epistemic_atoms
-        self.clingo_output_atoms = clingo_output_atoms
-        self.rules = rules
-        self.atom_rule_dict = defaultdict(set)
+        self.var_symbol_dict = var_symbol_dict
+
+        self.var_rule_dict = defaultdict(set)
 
     @classmethod
     def from_file(cls, fname):
         input = ELPReader.from_file(fname)
-        return cls(input.atoms, input.epistemic_atoms, input.clingo_output_atoms, input.clingo_rules)
+        return cls(input.atoms, input.clingo_rules, input.facts, input.epistemic_atoms, input.var_symbol_dict)
 
 
 class Graph:
@@ -392,7 +394,7 @@ class ELPProblem(Problem):
         return
 
     def decompose_nested_primal(self):
-        atoms, edges, adj = elp2primal(self.elp.atoms, self.elp.rules, self.elp.atom_rule_dict, True)
+        atoms, edges, adj = elp2primal(self.elp.atoms, self.elp.clingo_rules, self.elp.var_rule_dict, True)
         self.graph = Graph(self.elp.atoms, edges, adj)
         logger.info(f"Primal graph #vertices: {len(atoms)}, #edges: {len(edges)}")
         self.graph.abstract(self.non_nested)
@@ -426,7 +428,7 @@ class ELPProblem(Problem):
 
         tmp = tempfile.NamedTemporaryFile().name
         with FileWriter(tmp) as fw:
-            fw.write_elp(self.elp.atoms, self.elp.epistemic_atoms, self.elp.clingo_output_atoms, self.elp.rules)
+            fw.write_elp(self.elp.clingo_rules, self.elp.facts, self.elp.var_symbol_dict, self.elp.epistemic_atoms)
             # for i in range(0,128,1):
             if interrupted:
                 return -1
@@ -452,7 +454,7 @@ class ELPProblem(Problem):
     def solve_classic(self):
         if interrupted:
             return -1
-        # call ASP solver if no epistemics are left?
+        # TODO: call ASP solver if no epistemics are left?
         # if self.formula.vars == self.projected:
         #     return self.call_solver("sharpsat")
         # else:
@@ -477,6 +479,38 @@ class ELPProblem(Problem):
 
     def nestedpmc(self):
         return
+
+    def nestedelp(self):
+        global cfg
+
+        pool = BlockingThreadedConnectionPool(1,cfg["db"]["max_connections"],**cfg["db"]["dsn"])
+        problem_cfg = {}
+
+        if "problem_specific" in cfg and "nestelp" in cfg["problem_specific"]:
+            problem_cfg = cfg["problem_specific"]["nestelp"]
+        if interrupted:
+            return -1
+        self.nested_problem = NestElp("test",pool, **cfg["dpdb"], **flatten_cfg(problem_cfg, [], '_',NestPmc.keep_cfg()),**self.kwargs)
+        if interrupted:
+            return -1
+        self.nested_problem.set_td(self.graph.tree_decomp)
+        if interrupted:
+            return -1
+        self.nested_problem.set_recursive(self.solve_rec,self.depth)
+        if interrupted:
+            return -1
+        # TODO: set input
+        self.nested_problem.set_input(self.graph.num_nodes,-1,self.projected,self.non_nested_orig,self.formula.var_clause_dict)
+        if interrupted:
+            return -1
+        self.nested_problem.setup()
+        if interrupted:
+            return -1
+        self.nested_problem.solve()
+        if interrupted:
+            return -1
+        return self.nested_problem.model_count
+
 
     def solve(self):
         self.preprocess()
@@ -517,7 +551,7 @@ class ELPProblem(Problem):
                 logger.info("Tree width after abstraction >= abstract threshold ({})".format(cfg["nesthdb"]["threshold_abstract"]))
                 return self.final_result(self.solve_classic())
 
-        return
+        return self.final_result(self.nestedelp())
 
     def solve_rec(self, vars, clauses, non_nested, projected, depth=0, **kwargs):
         if interrupted:

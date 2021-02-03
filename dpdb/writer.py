@@ -79,24 +79,38 @@ class Writer(object):
             self.writeline("{} 0".format(" ".join(map(str,c))))
         self.flush()
 
-    def write_elp(self, atoms, epistemic_atoms, clingo_output_atoms, clingo_rules):
+    def write_elp(self, clingo_rules, facts, var_symbol_dict, epistemic_atoms):
+        def _get_symbol_for_atom(atom, body=False):
+            if atom < 0:
+                if abs(atom) in epistemic_atoms and body:
+                    return f"not &k{{{var_symbol_dict[abs(atom)]}}}"
+                else:
+                    return f"not {var_symbol_dict[abs(atom)]}"
+            else:
+                if atom in epistemic_atoms and body:
+                    return f"&k{{{var_symbol_dict[atom]}}}"
+                else:
+                    return var_symbol_dict[atom]
+
+        for f in facts:
+            print(f"{f}.")
+            self.writeline(f"{f}.")
+
         for r in clingo_rules:
             if (r.body == []):
-                self.writeline(f"{','.join([self._get_symbol_for_atom(ha, clingo_output_atoms) for ha in r.head])}.")
+                # removing facts from rules could make this easier
+                if(len(r.head) == 1):
+                    continue
+                print(f"{','.join([_get_symbol_for_atom(ha) for ha in r.head])}.")
+                self.writeline(f"{','.join([_get_symbol_for_atom(ha) for ha in r.head])}.")
             else:
-                self.writeline(f"{','.join([self._get_symbol_for_atom(ha, clingo_output_atoms) for ha in r.head])} :- "
-                       f"{','.join([self._get_symbol_for_atom(ba, clingo_output_atoms) for ba in r.body])}.")
+                print (f"{','.join([_get_symbol_for_atom(ha) for ha in r.head])} :- "
+                       f"{','.join([_get_symbol_for_atom(ba, True) for ba in r.body])}.")
+                self.writeline(f"{','.join([_get_symbol_for_atom(ha) for ha in r.head])} :- "
+                       f"{','.join([_get_symbol_for_atom(ba, True) for ba in r.body])}.")
         self.flush()
 
-    def _get_symbol_for_atom(self, atom, clingo_output_atoms):
-        # eclingo uses 0 for 1 in OutputAtoms...
-        if atom == 1:
-            atom = 0
-        for coa in clingo_output_atoms:
-            if atom == coa.atom:
-                return str(coa.symbol)
-            if (-1 * atom) == coa.atom:
-                return "not " + str(coa.symbol)
+
         
 class StreamWriter(Writer):
     def __init__(self, stream):
