@@ -22,6 +22,7 @@ from common import *
 from dpdb.abstraction import MinorGraph, ClingoControl
 from dpdb.db import BlockingThreadedConnectionPool, DBAdmin, DEBUG_SQL, setup_debug_sql
 from dpdb.problems.nestpmc import NestPmc
+from dpdb.problems.nestelp import NestElp
 from dpdb.problems.sat_util import *
 from dpdb.problems.elp_util import *
 from dpdb.reader import CnfReader, ELPReader
@@ -49,9 +50,9 @@ class Formula:
         return cls(input.vars, input.clauses, input.projected)
 
 class ELP:
-    def __init__(self, atoms, clingo_rules, facts, epistemic_atoms, var_symbol_dict):
+    def __init__(self, atoms, rules, facts, epistemic_atoms, var_symbol_dict):
         self.atoms = atoms
-        self.clingo_rules = clingo_rules
+        self.rules = rules
         self.facts = facts
         self.epistemic_atoms = epistemic_atoms
         self.var_symbol_dict = var_symbol_dict
@@ -61,7 +62,7 @@ class ELP:
     @classmethod
     def from_file(cls, fname):
         input = ELPReader.from_file(fname)
-        return cls(input.atoms, input.clingo_rules, input.facts, input.epistemic_atoms, input.var_symbol_dict)
+        return cls(input.atoms, input.rules, input.facts, input.epistemic_atoms, input.var_symbol_dict)
 
 
 class Graph:
@@ -379,7 +380,7 @@ class Problem:
 class ELPProblem(Problem):
     def __init__(self, elp, non_nested, depth=0, **kwargs):
         self.elp = elp
-        self.non_nested = set()
+        self.non_nested = non_nested
         self.non_nested_orig = non_nested
         self.depth = depth
         self.kwargs = kwargs
@@ -394,7 +395,7 @@ class ELPProblem(Problem):
         return
 
     def decompose_nested_primal(self):
-        atoms, edges, adj = elp2primal(self.elp.atoms, self.elp.clingo_rules, self.elp.var_rule_dict, True)
+        atoms, edges, adj = elp2primal(self.elp.atoms, self.elp.rules, self.elp.var_rule_dict, True)
         self.graph = Graph(self.elp.atoms, edges, adj)
         logger.info(f"Primal graph #vertices: {len(atoms)}, #edges: {len(edges)}")
         self.graph.abstract(self.non_nested)
@@ -428,7 +429,7 @@ class ELPProblem(Problem):
 
         tmp = tempfile.NamedTemporaryFile().name
         with FileWriter(tmp) as fw:
-            fw.write_elp(self.elp.clingo_rules, self.elp.facts, self.elp.var_symbol_dict, self.elp.epistemic_atoms)
+            fw.write_elp(self.elp.rules, self.elp.facts, self.elp.var_symbol_dict, self.elp.epistemic_atoms)
             # for i in range(0,128,1):
             if interrupted:
                 return -1
@@ -440,7 +441,7 @@ class ELPProblem(Problem):
             if interrupted:
                 return -1
 
-            result = getattr(output,solver_parser["result"])
+            result = True if getattr(output,solver_parser["result"]) == "SATISFIABLE" else False
             # check return codes
             # if psat.returncode == 245 or psat.returncode == 250:
             #     logger.debug("Retrying call to external solver, returncode {}, index {}".format(psat.returncode, i))
@@ -490,7 +491,7 @@ class ELPProblem(Problem):
             problem_cfg = cfg["problem_specific"]["nestelp"]
         if interrupted:
             return -1
-        self.nested_problem = NestElp("test",pool, **cfg["dpdb"], **flatten_cfg(problem_cfg, [], '_',NestPmc.keep_cfg()),**self.kwargs)
+        self.nested_problem = NestElp("NestedElp",pool, **cfg["dpdb"], **flatten_cfg(problem_cfg, [], '_',NestElp.keep_cfg()),**self.kwargs)
         if interrupted:
             return -1
         self.nested_problem.set_td(self.graph.tree_decomp)
@@ -499,8 +500,7 @@ class ELPProblem(Problem):
         self.nested_problem.set_recursive(self.solve_rec,self.depth)
         if interrupted:
             return -1
-        # TODO: set input
-        self.nested_problem.set_input(self.graph.num_nodes,-1,self.projected,self.non_nested_orig,self.formula.var_clause_dict)
+        self.nested_problem.set_input(self.graph.num_nodes,-1,self.elp.epistemic_atoms,self.non_nested_orig,self.elp.var_rule_dict,self.elp.facts,self.elp.var_symbol_dict)
         if interrupted:
             return -1
         self.nested_problem.setup()
@@ -509,7 +509,7 @@ class ELPProblem(Problem):
         self.nested_problem.solve()
         if interrupted:
             return -1
-        return self.nested_problem.model_count
+        return self.nested_problem.sat
 
 
     def solve(self):
@@ -524,10 +524,10 @@ class ELPProblem(Problem):
                 logger.info(f"Cache hit: {cached}")
                 return cached
 
-        # no epistemic -> asp solve
-        # if len(self.projected.intersection(self.formula.vars)) == 0:
-        #     logger.info("Intersection of vars and projected is empty")
-        #     return self.final_result(self.call_solver("sat"))
+        # no epistemic -> asp solve?
+        if len(self.elp.epistemic_atoms) == 0:
+            logger.info("No epistemic atoms left")
+            return self.final_result(self.call_solver("asp"))
 
         # max recursion depth -> classic solve
         if self.depth >= cfg["nesthdb"]["max_recursion_depth"]:
@@ -553,11 +553,11 @@ class ELPProblem(Problem):
 
         return self.final_result(self.nestedelp())
 
-    def solve_rec(self, vars, clauses, non_nested, projected, depth=0, **kwargs):
+    def solve_rec(self, atoms, rules, facts, var_symbol_dict, non_nested, epistemic_atoms, depth=0, **kwargs):
         if interrupted:
             return -1
         # TODO: change constructor to represent sub-problem
-        p = ELPProblem(None, non_nested, depth, **kwargs)
+        p = ELPProblem(ELP(atoms, rules, facts, epistemic_atoms, var_symbol_dict), non_nested, depth, **kwargs)
         self.sub_problems.add(p)
         result = p.solve()
         self.sub_problems.remove(p)
@@ -589,7 +589,7 @@ def main():
     # formula = Formula.from_file(fname)
     # prob = Problem(formula,formula.vars,**vars(args))
     elp = ELP.from_file(fname)
-    prob = ELPProblem(elp,None,**vars(args))
+    prob = ELPProblem(elp,elp.epistemic_atoms,**vars(args))
 
     def signal_handler(sig, frame):
         if sig == signal.SIGUSR1:
@@ -608,7 +608,7 @@ def main():
     signal.signal(signal.SIGUSR1, signal_handler)
 
     result = prob.solve()
-    logger.info(f"ELP: {result}")
+    logger.info(f"ELP: {'SATISFIABLE' if result else 'UNSATISFIABLE'}")
 
 if __name__ == "__main__":
     main()

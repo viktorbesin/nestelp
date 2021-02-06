@@ -220,6 +220,18 @@ class DB(object):
         else:
             self.execute(q)
 
+    def delete(self, table, where, returning = None):
+        sql_str = "DELETE FROM {} WHERE {}"
+        q = sql.SQL(sql_str).format(self.__table_name__(table),
+                    sql.SQL(' AND ').join(map(sql.SQL,where))
+                    )
+
+        if returning:
+            q = sql.Composed([q,sql.SQL(" RETURNING {}").format(sql.Identifier(returning))])
+            return self.exec_and_fetch(q)
+        else:
+            self.execute(q)
+
     def call(self, procedure, params = []):
         q = sql.SQL("CALL {} ({})").format(
                     sql.Identifier(procedure),

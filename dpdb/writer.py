@@ -79,7 +79,7 @@ class Writer(object):
             self.writeline("{} 0".format(" ".join(map(str,c))))
         self.flush()
 
-    def write_elp(self, clingo_rules, facts, var_symbol_dict, epistemic_atoms):
+    def write_elp(self, rules, facts, var_symbol_dict, epistemic_atoms):
         def _get_symbol_for_atom(atom, body=False):
             if atom < 0:
                 if abs(atom) in epistemic_atoms and body:
@@ -93,25 +93,23 @@ class Writer(object):
                     return var_symbol_dict[atom]
 
         for f in facts:
-            print(f"{f}.")
+            # print(f"{f}.")
             self.writeline(f"{f}.")
 
-        for r in clingo_rules:
-            if (r.body == []):
+        for r in rules:
+            if (r['body'] == []):
                 # removing facts from rules could make this easier
-                if(len(r.head) == 1):
+                if(len(r['head']) == 1):
                     continue
-                print(f"{','.join([_get_symbol_for_atom(ha) for ha in r.head])}.")
-                self.writeline(f"{','.join([_get_symbol_for_atom(ha) for ha in r.head])}.")
+                # print(f"{','.join([_get_symbol_for_atom(ha) for ha in r['head']])}.")
+                self.writeline(f"{','.join([_get_symbol_for_atom(ha) for ha in r['head']])}.")
             else:
-                print (f"{','.join([_get_symbol_for_atom(ha) for ha in r.head])} :- "
-                       f"{','.join([_get_symbol_for_atom(ba, True) for ba in r.body])}.")
-                self.writeline(f"{','.join([_get_symbol_for_atom(ha) for ha in r.head])} :- "
-                       f"{','.join([_get_symbol_for_atom(ba, True) for ba in r.body])}.")
+                # print (f"{','.join([_get_symbol_for_atom(ha) for ha in r['head']])} :- "
+                #        f"{','.join([_get_symbol_for_atom(ba, True) for ba in r['body']])}.")
+                self.writeline(f"{','.join([_get_symbol_for_atom(ha) for ha in r['head']])} :- "
+                       f"{','.join([_get_symbol_for_atom(ba, True) for ba in r['body']])}.")
         self.flush()
 
-
-        
 class StreamWriter(Writer):
     def __init__(self, stream):
         self.stream = stream

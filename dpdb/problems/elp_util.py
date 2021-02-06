@@ -28,8 +28,8 @@ def elp2primal (atoms_orig, rules, var_rule_dict = defaultdict(set), ret_adj=Fal
     adj = {}
 
     for rule in rules:
-        atoms = [abs(atom) for atom in rule.head+rule.body]
-        rule_set = hashabledict({frozenset(atoms): frozenset(rule.head+rule.body)})
+        atoms = [abs(atom) for atom in rule['head']+rule['body']]
+        rule_set = hashabledict({frozenset(atoms): hashabledict(rule)})
         for i in atoms:
             var_rule_dict[i].add(rule_set)
             for j in atoms:
@@ -40,4 +40,25 @@ def elp2primal (atoms_orig, rules, var_rule_dict = defaultdict(set), ret_adj=Fal
         return (atoms_orig, edges, adj)
     else:
         return (atoms_orig, edges)
+
+def covered_rules(rules, vertices):
+    vertice_set = set(vertices)
+    cur_cl = set()
+    for v in vertices:
+        candidates = rules[v]
+        for d in candidates:
+            for key, val in d.items():
+                if key.issubset(vertice_set):
+                    cur_cl.add(val)
+
+    return list(cur_cl)
+
+def get_fact(atom, var_symbol_dict):
+    if(atom > 0):
+        return f"{var_symbol_dict[atom]}"
+    else:
+        if var_symbol_dict[abs(atom)].startswith('-'):
+            return f"{var_symbol_dict[abs(atom)][1:]}"
+        else:
+            return f"-{var_symbol_dict[abs(atom)]}"
 

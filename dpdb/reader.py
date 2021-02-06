@@ -388,6 +388,7 @@ class ELPReader(Reader):
         self.atoms = set()
         self.epistemic_atoms = set()
         self.clingo_rules = []
+        self.rules = []
         self.facts = set()
         self.var_symbol_dict = {}
         self.epistemic_symbols = []
@@ -431,18 +432,25 @@ class ELPReader(Reader):
                     self.epistemic_atoms.add(o.atom)
 
         # remove all auxilary-related rules which were added by eclingo
-        self.clingo_rules = [item for item in self.clingo_rules if not (len(item.head) == 1 and item.head[0] in self.epistemic_atoms)]
+        # first filter: e.g. aux_eligible(mike) :- _atom_to_be_released, eligible(mike).
+        # second filter: e.g. :- eligible(mike), x_3.
+        self.clingo_rules = [item for item in self.clingo_rules if not ((len(item.head) == 1 and item.head[0] in self.epistemic_atoms) or len(item.head) == 0)]
         # set not-auxilary atoms and auxilary-atoms to be the same
         remove = []
         to_change = dict(self.var_symbol_dict)
         for atom in self.atoms:
-            if atom != 0 and f"aux_{self.var_symbol_dict[atom]}" in self.epistemic_symbols:
+            if atom != 0 and \
+                    (f"aux_{self.var_symbol_dict[atom]}" in self.epistemic_symbols or
+                            f"aux_sn_{self.var_symbol_dict[atom]}" in self.epistemic_symbols):
                 # set to correct atom in rules
                 aux_atom = -1
                 for a, symbol in self.var_symbol_dict.items():
                     if symbol == f"aux_{self.var_symbol_dict[atom]}":
                         aux_atom = a
                         to_change[a] = self.var_symbol_dict[atom]
+                    elif symbol == f"aux_sn_{self.var_symbol_dict[atom]}":
+                        aux_atom = a
+                        to_change[a] = "-"+self.var_symbol_dict[atom]
                 for r in self.clingo_rules:
                     if atom in r.head:
                         r.head.remove(atom)
@@ -458,7 +466,9 @@ class ELPReader(Reader):
         self.atoms = set([item for item in self.atoms if item != 0 and item not in remove])
         self.var_symbol_dict = to_change
 
-        print (self.clingo_rules)
+        self.rules = [{'head': [v for v in cr.head], 'body': [v for v in cr.body]} for cr in self.clingo_rules]
+
+        pprint (self.rules)
         print (self.var_symbol_dict)
         print (self.atoms)
         print (self.facts)
