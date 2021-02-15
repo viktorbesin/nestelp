@@ -7,18 +7,19 @@ from collections import defaultdict
 
 logger = logging.getLogger(__name__)
 
+
 class Reader(object):
-    def __init__(self,silent=False):
+    def __init__(self, silent=False):
         self.silent = silent
 
     @classmethod
     def from_file(cls, fname, **kwargs):
         with open(fname, "r") as f:
-            return cls.from_string(f.read(),**kwargs)
+            return cls.from_string(f.read(), **kwargs)
 
     @classmethod
     def from_stream(cls, stream, **kwargs):
-        return cls.from_string(stream.read().decode(),**kwargs)
+        return cls.from_string(stream.read().decode(), **kwargs)
 
     @classmethod
     def from_string(cls, string, **kwargs):
@@ -29,22 +30,24 @@ class Reader(object):
     def parse(self, string):
         pass
 
+
 class RegExReader(Reader):
-    def __init__(self,pattern,silent=False):
+    def __init__(self, pattern, silent=False):
         super().__init__(silent)
         self.pattern = pattern
         self.result = None
 
     def parse(self, string):
-        m = re.search(self.pattern,string)
+        m = re.search(self.pattern, string)
         if m:
             self.result = m.group(1)
         else:
             logger.error("Unable to parse input {0}".format(string))
 
+
 class SciNumberRegExReader(RegExReader):
-    def __init__(self,pattern,silent=False):
-        super().__init__(pattern,silent)
+    def __init__(self, pattern, silent=False):
+        super().__init__(pattern, silent)
 
     def parse(self, string):
         super().parse(string)
@@ -53,8 +56,9 @@ class SciNumberRegExReader(RegExReader):
         dot = self.result.find(".")
         exp = self.result.find("e+")
         if dot >= 0 and exp >= 0:
-            sdec = self.result[dot+1:exp]
-            self.result = int(self.result[0:dot] + sdec) * (10 ** (int(self.result[exp+2:]) - len(sdec)))
+            sdec = self.result[dot + 1:exp]
+            self.result = int(self.result[0:dot] + sdec) * (10 ** (int(self.result[exp + 2:]) - len(sdec)))
+
 
 class DimacsReader(Reader):
     def parse(self, string):
@@ -80,24 +84,25 @@ class DimacsReader(Reader):
     def preamble_special(self, line):
         return False
 
-    def preamble(self,lines):
+    def preamble(self, lines):
         for lineno, line in enumerate(lines):
             if line.startswith("p ") or line.startswith("s "):
                 line = line.split()
                 self.problem_solution_type = line[0]
-                self.format = line[1] 
+                self.format = line[1]
                 self._problem_vars = line[2:]
-                return lineno+1
+                return lineno + 1
             elif not line or self.is_comment(line):
                 continue
             else:
                 if self.preamble_special(line):
-                    return lineno+1
+                    return lineno + 1
                 else:
                     logger.warning("Invalid content in preamble at line %d: %s", lineno, line)
         logger.error("No type found in DIMACS file!")
         sys.exit(1)
-        
+
+
 class CnfReader(DimacsReader):
     def __init__(self, silent=False):
         super().__init__(silent)
@@ -108,7 +113,7 @@ class CnfReader(DimacsReader):
         self.maybe_sat = True
         self.models = None
         self.error = False
-        #self.single_clauses_only = set()
+        # self.single_clauses_only = set()
         self.single_clauses = set()
         self.single_vars = set()
 
@@ -125,7 +130,7 @@ class CnfReader(DimacsReader):
         else:
             return super().is_comment(line)
 
-    def preamble_special(self,line):
+    def preamble_special(self, line):
         if line == 'c UNSATISFIABLE':
             self.maybe_sat = False
             return True
@@ -182,9 +187,9 @@ class CnfReader(DimacsReader):
         if self.format != "cnf":
             logger.error("Not a cnf file!")
             sys.exit(1)
-        
+
         maxvar = 0
-        #projected_vars = set()
+        # projected_vars = set()
 
         for lineno, line in enumerate(lines):
             if not line or self.is_comment(line):
@@ -203,65 +208,68 @@ class CnfReader(DimacsReader):
             else:
                 clause, lines = self.read_terminated(lines, line, lineno)
                 if len(clause) == 1:
-                    if -clause[0] in self.single_clauses:  #UNSAT
+                    if -clause[0] in self.single_clauses:  # UNSAT
                         self.maybe_sat = False
                         self.models = 0
                         break
                     self.single_clauses.add(clause[0])
                 else:
                     self.clauses.append(clause)
-                    
+
         # simplify with single clauses, avoid copies, do it at most 10 times in a row
         iterate = 0
         removed_singles = True
         while iterate < 10 and removed_singles:
-           removed_singles = False
-           i = 0
-           while i < len(self.clauses):
-               j = 0
-               cl = self.clauses[i]
-               while j < len(cl):
-                   if cl[j] in self.single_clauses: #clause sat, not needed anymore
-                       del self.clauses[i] #remove clause
-                       i = i - 1
-                       break
-                   elif -cl[j] in self.single_clauses: #remove false literal
-                       del cl[j]
-                       j = j - 1
-                       if len(cl) == 1: #newly turned single!
-                           removed_singles = True
-                           self.single_clauses.add(cl[j])
-                           del self.clauses[i] #remove clause
-                           i = i - 1
-                           if -cl[j] in self.single_clauses:  #UNSAT
-                               self.maybe_sat = False
-                               self.models = 0
-                               i = len(self.clauses)
-                           break
-                   j = j + 1
-               i = i + 1
+            removed_singles = False
+            i = 0
+            while i < len(self.clauses):
+                j = 0
+                cl = self.clauses[i]
+                while j < len(cl):
+                    if cl[j] in self.single_clauses:  # clause sat, not needed anymore
+                        del self.clauses[i]  # remove clause
+                        i = i - 1
+                        break
+                    elif -cl[j] in self.single_clauses:  # remove false literal
+                        del cl[j]
+                        j = j - 1
+                        if len(cl) == 1:  # newly turned single!
+                            removed_singles = True
+                            self.single_clauses.add(cl[j])
+                            del self.clauses[i]  # remove clause
+                            i = i - 1
+                            if -cl[j] in self.single_clauses:  # UNSAT
+                                self.maybe_sat = False
+                                self.models = 0
+                                i = len(self.clauses)
+                            break
+                    j = j + 1
+                i = i + 1
         iterate = iterate + 1
 
         for clause in self.clauses:
             self.vars.update([abs(lit) for lit in clause])
-        maxvar = max(maxvar,max(self.vars))
+        maxvar = max(maxvar, max(self.vars))
 
         self.single_vars = set((abs(l) for l in self.single_clauses))
         self.projected = self.projected.difference(self.single_vars)
 
-        #maxvar = max(maxvar,max(self.projected))
-        #self.projected = projected_vars
+        # maxvar = max(maxvar,max(self.projected))
+        # self.projected = projected_vars
         if maxvar != self.num_vars:
             logger.warning("Effective number of variables mismatch preamble (%d vs %d)", maxvar, self.num_vars)
         if len(self.clauses) != self.num_clauses:
-            logger.warning("Effective number of clauses mismatch preamble (%d vs %d)", len(self.clauses), self.num_clauses)
+            logger.warning("Effective number of clauses mismatch preamble (%d vs %d)", len(self.clauses),
+                           self.num_clauses)
+
 
 def _add_directed_edge(edges, adjacency_list, vertex1, vertex2):
     if vertex1 in adjacency_list:
         adjacency_list[vertex1].append(vertex2)
     else:
         adjacency_list[vertex1] = [vertex2]
-    edges.append((vertex1,vertex2))
+    edges.append((vertex1, vertex2))
+
 
 class TdReader(DimacsReader):
     def __init__(self, silent=False):
@@ -286,13 +294,13 @@ class TdReader(DimacsReader):
             self.adjacency_list[vertex1].append(vertex2)
         else:
             self.adjacency_list[vertex1] = [vertex2]
-        self.edges.append((vertex1,vertex2))
+        self.edges.append((vertex1, vertex2))
 
     def body(self, lines):
         if self.format != "td":
             logger.error("Not a td file!")
             sys.exit(1)
-        
+
         for lineno, line in enumerate(lines):
             if not line:
                 continue
@@ -311,15 +319,17 @@ class TdReader(DimacsReader):
                 vertex1 = int(line[0])
                 vertex2 = int(line[1])
 
-                _add_directed_edge(self.edges,self.adjacency_list,vertex1,vertex2)
-                _add_directed_edge(self.edges,self.adjacency_list,vertex2,vertex1)
+                _add_directed_edge(self.edges, self.adjacency_list, vertex1, vertex2)
+                _add_directed_edge(self.edges, self.adjacency_list, vertex2, vertex1)
 
         if self.problem_solution_type == "p":
             if len(self.edges) != self.num_edges * 2:
-                logger.warning("Effective number of edges mismatch preamble (%d vs %d)", len(self.edges)/2, self.num_edges)
+                logger.warning("Effective number of edges mismatch preamble (%d vs %d)", len(self.edges) / 2,
+                               self.num_edges)
         elif self.problem_solution_type == "s":
             if len(self.bags) != self.num_bags:
                 logger.warning("Effective number of bags mismatch preamble (%d vs %d)", len(self.bags), self.num_bags)
+
 
 class TwReader(DimacsReader):
     def __init__(self, silent=False):
@@ -346,11 +356,13 @@ class TwReader(DimacsReader):
             vertex1 = int(line[0])
             vertex2 = int(line[1])
 
-            _add_directed_edge(self.edges,self.adjacency_list,vertex1,vertex2)
-            _add_directed_edge(self.edges,self.adjacency_list,vertex2,vertex1)
+            _add_directed_edge(self.edges, self.adjacency_list, vertex1, vertex2)
+            _add_directed_edge(self.edges, self.adjacency_list, vertex2, vertex1)
 
         if len(self.edges) != self.num_edges * 2:
-            logger.warning("Effective number of edges mismatch preamble (%d vs %d)", len(self.edges)/2, self.num_edges)
+            logger.warning("Effective number of edges mismatch preamble (%d vs %d)", len(self.edges) / 2,
+                           self.num_edges)
+
 
 class EdgeReader(DimacsReader):
     def __init__(self, silent=False):
@@ -377,20 +389,29 @@ class EdgeReader(DimacsReader):
             vertex1 = int(line[1])
             vertex2 = int(line[2])
 
-            _add_directed_edge(self.edges,self.adjacency_list,vertex1,vertex2)
-            _add_directed_edge(self.edges,self.adjacency_list,vertex2,vertex1)
+            _add_directed_edge(self.edges, self.adjacency_list, vertex1, vertex2)
+            _add_directed_edge(self.edges, self.adjacency_list, vertex2, vertex1)
 
         if len(self.edges) != self.num_edges * 2:
-            logger.warning("Effective number of edges mismatch preamble (%d vs %d)", len(self.edges)/2, self.num_edges)
+            logger.warning("Effective number of edges mismatch preamble (%d vs %d)", len(self.edges) / 2,
+                           self.num_edges)
+
 
 class ELPReader(Reader):
     def __init__(self):
         self.atoms = set()
         self.epistemic_atoms = set()
-        self.clingo_rules = []
+        self.epistemic_not_atoms = set()
         self.rules = []
         self.facts = set()
+        self.choice_rules = []
         self.var_symbol_dict = {}
+        self.symbol_var_dict = {}
+        self.extra_atoms = {}
+
+        self.clingo_rules = []
+        self.clingo_facts = []
+        self.clingo_choice_rules = []
         self.epistemic_symbols = []
 
     def parse(self, string):
@@ -398,79 +419,69 @@ class ELPReader(Reader):
         eclingo_control.add(string)
         eclingo_control.parse()
 
+        _external = "_atom_to_be_released"
+        _aux = "aux_"
+        _not = "not_"
+        _sn = "sn_"
+        _external_atom = -1
+
         # print grounded program
         print("------------------------------------------------------------")
         print("   Grounded Program")
         print("------------------------------------------------------------")
         # pprint(eclingo_control.ground_program.objects)
         # print(eclingo_control.ground_program)
-        # self.atoms = eclingo_control._candidates_gen.symbolic_atoms
-
-        for epistemic_atom in eclingo_control._epistemic_atoms.keys():
-            # eclingo grounds using auxilary-atoms; replace those to keep the original (but grounded) elp
-            # if str(epistemic_atom).startswith("aux_"):
-            #     self.epistemic_symbols.append(str(epistemic_atom)[4:])
-            self.epistemic_symbols.append(str(epistemic_atom))
 
         for o in eclingo_control.ground_program.objects:
             # Rules
             if isinstance(o, eclingo.ClingoRule):
-                # if (o.body == [] and len(o.head) == 1):
-                #     self.facts.append(o)
+                if (o.body == [] and len(o.head) == 1):
+                    if not (o.choice):
+                        self.clingo_facts.append(o)
                 self.clingo_rules.append(o)
             # OutputAtoms
             elif isinstance(o, eclingo.ClingoOutputAtom):
                 # remove _atom_to_be_released from atoms
-                if (str(o.symbol) == "_atom_to_be_released"):
+                if (str(o.symbol) == _external):
+                    _external_atom = o.atom
                     continue
-                if(o.atom != 0):
+                if (o.atom != 0):
                     self.var_symbol_dict[o.atom] = str(o.symbol)
+                    self.symbol_var_dict[str(o.symbol)] = o.atom
                 else:
                     self.facts.add(o.symbol)
                 self.atoms.add(o.atom)
-                if(o.symbol in eclingo_control._epistemic_atoms.keys()):
-                    self.epistemic_atoms.add(o.atom)
 
-        # remove all auxilary-related rules which were added by eclingo
-        # first filter: e.g. aux_eligible(mike) :- _atom_to_be_released, eligible(mike).
-        # second filter: e.g. :- eligible(mike), x_3.
-        self.clingo_rules = [item for item in self.clingo_rules if not ((len(item.head) == 1 and item.head[0] in self.epistemic_atoms) or len(item.head) == 0)]
-        # set not-auxilary atoms and auxilary-atoms to be the same
-        remove = []
-        to_change = dict(self.var_symbol_dict)
-        for atom in self.atoms:
-            if atom != 0 and \
-                    (f"aux_{self.var_symbol_dict[atom]}" in self.epistemic_symbols or
-                            f"aux_sn_{self.var_symbol_dict[atom]}" in self.epistemic_symbols):
-                # set to correct atom in rules
-                aux_atom = -1
-                for a, symbol in self.var_symbol_dict.items():
-                    if symbol == f"aux_{self.var_symbol_dict[atom]}":
-                        aux_atom = a
-                        to_change[a] = self.var_symbol_dict[atom]
-                    elif symbol == f"aux_sn_{self.var_symbol_dict[atom]}":
-                        aux_atom = a
-                        to_change[a] = "-"+self.var_symbol_dict[atom]
-                for r in self.clingo_rules:
-                    if atom in r.head:
-                        r.head.remove(atom)
-                        r.head.append(aux_atom)
-                    if atom in r.body:
-                        r.body.remove(atom)
-                        r.body.append(aux_atom)
+        # add unmatched atoms
+        for r in self.clingo_rules:
+            for a in r.head + r.body:
+                self.atoms.add(abs(a))
 
-                # remove other atom
-                remove.append(atom)
-                to_change.pop(atom)
+        for key, value in eclingo_control._epistemic_atoms.items():
+            if (str(value) in self.symbol_var_dict.keys()):
+                # if there is already one epistemic, note that to partners
+                if self.symbol_var_dict[str(value)] in self.epistemic_atoms:
+                    self.extra_atoms[self.symbol_var_dict[str(value)]].append(self.symbol_var_dict[str(key)])
+                else:
+                    self.epistemic_atoms.add(self.symbol_var_dict[str(value)])
+                    self.extra_atoms[self.symbol_var_dict[str(value)]] = [self.symbol_var_dict[str(key)]]
+                self.atoms.remove(self.symbol_var_dict[str(key)])
+            else:
+                self.epistemic_atoms.add(self.symbol_var_dict[str(key)])
 
-        self.atoms = set([item for item in self.atoms if item != 0 and item not in remove])
-        self.var_symbol_dict = to_change
+        # remove auxilary-related rules which were added by eclingo
+        # filter 1: check for choice-rules - e.g. { aux_eligible(mike) }.
+        # filter 2: check for #external in rule body - e.g. aux_eligible(mike) :- _atom_to_be_released, eligible(mike).
+        self.clingo_rules = [item for item in self.clingo_rules
+                             if not (item.choice or  # filter 1
+                                     _external_atom in item.body)] # or  # filter 2
 
         self.rules = [{'head': [v for v in cr.head], 'body': [v for v in cr.body]} for cr in self.clingo_rules]
 
-        pprint (self.rules)
-        print (self.var_symbol_dict)
-        print (self.atoms)
-        print (self.facts)
-        print (self.epistemic_atoms)
-
+        # pprint(self.rules)
+        # print(self.var_symbol_dict)
+        # print(self.atoms)
+        # print(self.facts)
+        # print(self.epistemic_atoms)
+        # print(self.epistemic_not_atoms)
+        # print(self.extra_atoms)

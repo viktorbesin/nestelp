@@ -1,6 +1,7 @@
 # -*- coding: future_fstrings -*-
 from dpdb.problem import *
 from collections import defaultdict
+import itertools
 
 class hashabledict(dict):
     def __hash__(self):
@@ -17,13 +18,7 @@ def _add_directed_edge(edges, adjacency_list, vertex1, vertex2):
     if vertex1 < vertex2:
         edges.add((vertex1,vertex2))
 
-def _path_between(i, j, edges):
-    return False
-    # if i < j:
-    #     for
-    # else:
-
-def elp2primal (atoms_orig, rules, var_rule_dict = defaultdict(set), ret_adj=False):
+def elp2primal (atoms_orig, rules, extra_atoms, var_rule_dict = defaultdict(set), ret_adj=False):
     edges = set([])
     adj = {}
 
@@ -31,8 +26,12 @@ def elp2primal (atoms_orig, rules, var_rule_dict = defaultdict(set), ret_adj=Fal
         atoms = [abs(atom) for atom in rule['head']+rule['body']]
         rule_set = hashabledict({frozenset(atoms): hashabledict(rule)})
         for i in atoms:
+            if i not in atoms_orig:
+                i = _get_main_atom(extra_atoms,i)
             var_rule_dict[i].add(rule_set)
             for j in atoms:
+                if j not in atoms_orig:
+                    j = _get_main_atom(extra_atoms,j)
                 _add_directed_edge(edges,adj,i,j)
                 _add_directed_edge(edges,adj,j,i)
 
@@ -41,7 +40,7 @@ def elp2primal (atoms_orig, rules, var_rule_dict = defaultdict(set), ret_adj=Fal
     else:
         return (atoms_orig, edges)
 
-def covered_rules(rules, vertices):
+def covered_rules(rules, vertices, extra_atoms):
     vertice_set = set(vertices)
     cur_cl = set()
     for v in vertices:
@@ -51,7 +50,34 @@ def covered_rules(rules, vertices):
                 if key.issubset(vertice_set):
                     cur_cl.add(val)
 
+    cur_cl.update(covered_extra_rules(rules, vertices, extra_atoms))
     return list(cur_cl)
+
+def covered_extra_rules(rules, vertices, extra_atoms):
+    vertice_set = set(vertices)
+    for v in vertices:
+        if v in extra_atoms.keys():
+            vertice_set.update(set(extra_atoms[v]))
+
+    cur_cl = set()
+    for v in vertices:
+        candidates = rules[v]
+        for d in candidates:
+            for key, val in d.items():
+                if key.issubset(vertice_set):
+                    cur_cl.add(val)
+
+    return cur_cl
+
+def _get_main_atom(extra_atoms, atom):
+    keys = list(extra_atoms.keys())
+    vals = list(extra_atoms.values())
+
+    for val in vals:
+        if atom in val:
+            return keys[vals.index(val)]
+    return -1
+
 
 def get_fact(atom, var_symbol_dict):
     if(atom > 0):

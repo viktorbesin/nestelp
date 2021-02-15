@@ -50,19 +50,21 @@ class Formula:
         return cls(input.vars, input.clauses, input.projected)
 
 class ELP:
-    def __init__(self, atoms, rules, facts, epistemic_atoms, var_symbol_dict):
+    def __init__(self, atoms, rules, facts, extra_atoms, epistemic_atoms, epistemic_not_atoms, var_symbol_dict):
         self.atoms = atoms
         self.rules = rules
         self.facts = facts
         self.epistemic_atoms = epistemic_atoms
+        self.epistemic_not_atoms = epistemic_not_atoms
         self.var_symbol_dict = var_symbol_dict
+        self.extra_atoms = extra_atoms
 
         self.var_rule_dict = defaultdict(set)
 
     @classmethod
     def from_file(cls, fname):
         input = ELPReader.from_file(fname)
-        return cls(input.atoms, input.rules, input.facts, input.epistemic_atoms, input.var_symbol_dict)
+        return cls(input.atoms, input.rules, input.facts, input.extra_atoms, input.epistemic_atoms, input.epistemic_not_atoms, input.var_symbol_dict)
 
 
 class Graph:
@@ -395,7 +397,7 @@ class ELPProblem(Problem):
         return
 
     def decompose_nested_primal(self):
-        atoms, edges, adj = elp2primal(self.elp.atoms, self.elp.rules, self.elp.var_rule_dict, True)
+        atoms, edges, adj = elp2primal(self.elp.atoms, self.elp.rules, self.elp.extra_atoms, self.elp.var_rule_dict, True)
         self.graph = Graph(self.elp.atoms, edges, adj)
         logger.info(f"Primal graph #vertices: {len(atoms)}, #edges: {len(edges)}")
         self.graph.abstract(self.non_nested)
@@ -429,7 +431,7 @@ class ELPProblem(Problem):
 
         tmp = tempfile.NamedTemporaryFile().name
         with FileWriter(tmp) as fw:
-            fw.write_elp(self.elp.rules, self.elp.facts, self.elp.var_symbol_dict, self.elp.epistemic_atoms)
+            fw.write_elp(self.elp.rules, self.elp.facts, self.elp.extra_atoms, self.elp.var_symbol_dict, self.elp.epistemic_atoms, self.elp.epistemic_not_atoms)
             # for i in range(0,128,1):
             if interrupted:
                 return -1
@@ -455,31 +457,25 @@ class ELPProblem(Problem):
     def solve_classic(self):
         if interrupted:
             return -1
-        # TODO: call ASP solver if no epistemics are left?
-        # if self.formula.vars == self.projected:
-        #     return self.call_solver("sharpsat")
-        # else:
+
         return self.call_solver("elp")
 
     def final_result(self,result):
         final = result
         #TODO
         # if not self.kwargs["no_cache"]:
-        #     frozen_clauses = frozenset([frozenset(c) for c in self.formula.clauses])
-        #     cache[frozen_clauses] = final
+        #     frozen_rules = frozenset([hashabledict(r) for r in self.elp.rules])
+        #     cache[frozen_rules] = final
         return final
 
     #TODO
     def get_cached(self):
-        # frozen_rules = frozenset([frozenset(c) for c in self.program.rules])
+        # frozen_rules = frozenset([hashabledict(r) for r in self.elp.rules])
         # if frozen_rules in cache:
         #     return cache[frozen_rules]
         # else:
         #     return None
         return None
-
-    def nestedpmc(self):
-        return
 
     def nestedelp(self):
         global cfg
@@ -500,7 +496,7 @@ class ELPProblem(Problem):
         self.nested_problem.set_recursive(self.solve_rec,self.depth)
         if interrupted:
             return -1
-        self.nested_problem.set_input(self.graph.num_nodes,-1,self.elp.epistemic_atoms,self.non_nested_orig,self.elp.var_rule_dict,self.elp.facts,self.elp.var_symbol_dict)
+        self.nested_problem.set_input(self.graph.num_nodes,-1,self.elp.epistemic_atoms,self.elp.epistemic_not_atoms,self.non_nested_orig,self.elp.var_rule_dict,self.elp.facts,self.elp.var_symbol_dict,self.elp.extra_atoms)
         if interrupted:
             return -1
         self.nested_problem.setup()
@@ -515,16 +511,13 @@ class ELPProblem(Problem):
     def solve(self):
         self.preprocess()
 
-        # TODO: set to epistemic
-        #self.non_nested = self.non_nested.intersection(self.projected)
-
         if not self.kwargs["no_cache"]:
             cached = self.get_cached()
             if cached != None:
                 logger.info(f"Cache hit: {cached}")
                 return cached
 
-        # no epistemic -> asp solve?
+        # no epistemic -> asp solve
         if len(self.elp.epistemic_atoms) == 0:
             logger.info("No epistemic atoms left")
             return self.final_result(self.call_solver("asp"))
@@ -538,7 +531,7 @@ class ELPProblem(Problem):
         if interrupted:
             return -1
 
-        if self.depth > 0 and self.graph.tree_decomp.tree_width >= cfg["nesthdb"]["threshold_hybrid"]: #TODO OR PROJECTION SIZE BELOW TRESHOLD OR CLAUSE SIZE BELOW TRESHOLD
+        if self.depth > 0 and self.graph.tree_decomp.tree_width >= cfg["nesthdb"]["threshold_hybrid"]:
             logger.info("Tree width >= hybrid threshold ({})".format(cfg["nesthdb"]["threshold_hybrid"]))
             return self.final_result(self.solve_classic())
 
@@ -553,11 +546,10 @@ class ELPProblem(Problem):
 
         return self.final_result(self.nestedelp())
 
-    def solve_rec(self, atoms, rules, facts, var_symbol_dict, non_nested, epistemic_atoms, depth=0, **kwargs):
+    def solve_rec(self, atoms, rules, facts, extra_atoms, var_symbol_dict, non_nested, epistemic_atoms, epistemic_not_atoms, depth=0, **kwargs):
         if interrupted:
             return -1
-        # TODO: change constructor to represent sub-problem
-        p = ELPProblem(ELP(atoms, rules, facts, epistemic_atoms, var_symbol_dict), non_nested, depth, **kwargs)
+        p = ELPProblem(ELP(atoms, rules, facts, extra_atoms, epistemic_atoms, epistemic_not_atoms, var_symbol_dict), non_nested, depth, **kwargs)
         self.sub_problems.add(p)
         result = p.solve()
         self.sub_problems.remove(p)

@@ -78,25 +78,6 @@ class NestElp(Problem):
         return q
 
     def filter(self,node):
-        # f = filter(self.var_clause_dict, node)
-        # if len(node.minor_vertices) > 0 and len(node.all_vertices) - len(node.vertices) <= self.inner_vars_threshold:
-        #     minor_vertices = node.minor_vertices - self.projected
-        #     if f == "":
-        #         f = "WHERE "
-        #     else:
-        #         f += " AND "
-        #     f += f"EXISTS (WITH introduce AS ({self.introduce(node)}) SELECT 1 "
-        #     candidate_tabs = ",".join(["{} {}".format(var2tab(node, v), var2tab_alias(node, v)) for v in minor_vertices])
-        #     if len(candidate_tabs) > 0:
-        #         f += f"FROM {candidate_tabs} "
-        #     f += "WHERE "
-        #     cur_cl = covered_clauses(self.var_clause_dict,node.all_vertices)
-        #     f += "({0})".format(") AND (".join(
-        #         [" OR ".join([lit2expr2(node,c,minor_vertices) for c in clause]) for clause in cur_cl]
-        #     ))
-        #     f += ")"
-        # return f
-        #return filter(self.var_clause_dict, node)
         return ""
 
     def setup_extra(self):
@@ -148,20 +129,22 @@ class NestElp(Problem):
         self.rec_func = func
         self.depth = depth
 
-    def set_input(self,num_vars,num_rules,epistemic_atoms,non_nested,var_rule_dict,facts,var_symbol_dict):
+    def set_input(self,num_vars,num_rules,epistemic_atoms,epistemic_non_atoms,non_nested,var_rule_dict,facts,var_symbol_dict,extra_atoms):
         self.num_vars = num_vars
         self.num_rules = num_rules
         self.epistemic_atoms = epistemic_atoms
+        self.epistemic_non_atoms = epistemic_non_atoms
         self.non_nested = non_nested
         self.var_rule_dict = var_rule_dict
         self.facts = facts
         self.var_symbol_dict = var_symbol_dict
+        self.extra_atoms = extra_atoms
 
     def after_solve_node(self, node, db):
         cols = [var2col(c) for c in node.vertices]
         executor = ThreadPoolExecutor(self.max_solver_threads)
         futures = []
-        rules = covered_rules(self.var_rule_dict, node.all_vertices)
+        rules = covered_rules(self.var_rule_dict, node.all_vertices, self.extra_atoms)
         for r in db.select_all(f"td_node_{node.id}",cols):
             if not self.interrupted:
                 # if len(node.all_vertices) - len(node.vertices) > self.inner_vars_threshold: # only if there is an inner problem to solve
@@ -178,21 +161,21 @@ class NestElp(Problem):
             where = []
             num_vars = len(node.all_vertices)
             rules = list(covered_rules)
-            facts = self.facts.copy()
             for i,v in enumerate(vals):
                 if v != None:
                     where.append("{} = {}".format(cols[i],v))
                     n = node.vertices[i]
+
                     if v:
-                        facts.add(get_fact(n, self.var_symbol_dict))
+                        rules.append({'head': [], 'body': [n]})
                     else:
-                        facts.add(get_fact(n*(-1), self.var_symbol_dict))
+                        rules.append({'head': [], 'body': [(-1)*n]})
             #actually, it is probably better to leave it like that such that one could use maybe #sat instead of pmc?
             epistemic_atoms = self.epistemic_atoms.intersection(node.all_vertices) - set(node.vertices)
 
             non_nested = self.non_nested.intersection(node.all_vertices) - set(node.vertices)
             logger.info(f"Problem {self.id}: Calling recursive for bag {node.id}: {num_vars} {len(rules)} {len(epistemic_atoms)}")
-            sat = self.rec_func(node.all_vertices,rules,facts,self.var_symbol_dict,non_nested,epistemic_atoms,self.depth+1,**self.kwargs)
+            sat = self.rec_func(node.all_vertices,rules,self.facts,self.extra_atoms,self.var_symbol_dict,non_nested,epistemic_atoms,self.depth+1,**self.kwargs)
             if not self.interrupted:
                 if not sat:
                     db.delete(f"td_node_{node.id}",where)

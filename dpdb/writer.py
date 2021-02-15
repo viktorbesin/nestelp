@@ -79,21 +79,57 @@ class Writer(object):
             self.writeline("{} 0".format(" ".join(map(str,c))))
         self.flush()
 
-    def write_elp(self, rules, facts, var_symbol_dict, epistemic_atoms):
-        def _get_symbol_for_atom(atom, body=False):
-            if atom < 0:
-                if abs(atom) in epistemic_atoms and body:
-                    return f"not &k{{{var_symbol_dict[abs(atom)]}}}"
-                else:
-                    return f"not {var_symbol_dict[abs(atom)]}"
-            else:
-                if atom in epistemic_atoms and body:
-                    return f"&k{{{var_symbol_dict[atom]}}}"
-                else:
-                    return var_symbol_dict[atom]
+    def write_elp(self, rules, facts, extra_atoms, var_symbol_dict, epistemic_atoms, epistemic_not_atoms):
+        def _get_main_atom(extra_atoms, atom):
+            keys = list(extra_atoms.keys())
+            vals = list(extra_atoms.values())
+            for val in vals:
+                if atom in val:
+                    return keys[vals.index(val)]
+            return -1
 
+        def _get_symbol_for_atom(atom, body=False):
+            if abs(atom) not in var_symbol_dict.keys():
+                return f"x_{abs(atom)}" if atom > 0 else f"not x_{abs(atom)}"
+            if atom < 0:
+                _neg = "not"
+            else:
+                _neg = ""
+            symbol = var_symbol_dict[abs(atom)]
+
+            # check if its still epistemic
+            if symbol.startswith("aux_not_sn_"):
+                if abs(atom) in epistemic_atoms or _get_main_atom(extra_atoms, abs(atom)) in epistemic_atoms:
+                    return f"{_neg} &k{{~ -{symbol[11:]}}}"
+                else:
+                    return f"{_neg} not -{symbol[11:]}"
+            elif symbol.startswith("aux_sn_"):
+                if abs(atom) in epistemic_atoms or _get_main_atom(extra_atoms, abs(atom)) in epistemic_atoms:
+                    return f"{_neg} &k{{-{symbol[7:]}}}"
+                else:
+                    if atom < 0:
+                        return f"{_neg} -{symbol[7:]}"
+                    else:
+                        return f"{_neg} {_neg} -{symbol[7:]}"
+            elif symbol.startswith("aux_not_"):
+                if abs(atom) in epistemic_atoms or _get_main_atom(extra_atoms, abs(atom)) in epistemic_atoms:
+                    return f"{_neg} &k{{~ {symbol[8:]}}}"
+                else:
+                    return f"{_neg} not {symbol[8:]}"
+            elif symbol.startswith("aux_"):
+                if abs(atom) in epistemic_atoms or _get_main_atom(extra_atoms, abs(atom)) in epistemic_atoms:
+                    return f"{_neg} &k{{{symbol[4:]}}}"
+                else:
+                    if atom < 0:
+                        return f"{_neg} {symbol[4:]}"
+                    else:
+                        return f"{_neg} {_neg} {symbol[4:]}"
+
+            return f"{_neg} {symbol}"
+
+        str_rules = []
         for f in facts:
-            # print(f"{f}.")
+            # str_rules.append(f"{f}.")
             self.writeline(f"{f}.")
 
         for r in rules:
@@ -101,13 +137,15 @@ class Writer(object):
                 # removing facts from rules could make this easier
                 if(len(r['head']) == 1):
                     continue
-                # print(f"{','.join([_get_symbol_for_atom(ha) for ha in r['head']])}.")
+                # str_rules.append(f"{','.join([_get_symbol_for_atom(ha) for ha in r['head']])}.")
                 self.writeline(f"{','.join([_get_symbol_for_atom(ha) for ha in r['head']])}.")
             else:
-                # print (f"{','.join([_get_symbol_for_atom(ha) for ha in r['head']])} :- "
+                # str_rules.append(f"{','.join([_get_symbol_for_atom(ha) for ha in r['head']])} :- "
                 #        f"{','.join([_get_symbol_for_atom(ba, True) for ba in r['body']])}.")
                 self.writeline(f"{','.join([_get_symbol_for_atom(ha) for ha in r['head']])} :- "
                        f"{','.join([_get_symbol_for_atom(ba, True) for ba in r['body']])}.")
+
+        # print ('\n'.join(str_rules))
         self.flush()
 
 class StreamWriter(Writer):

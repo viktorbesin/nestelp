@@ -28,6 +28,11 @@
   "dpdb": {
   },
   "problem_specific": {
+    "nestelp": {
+      "max_solver_threads": 12,
+      "inner_vars_threshold": 40,
+      "max_worker_threads": 12
+    },
     "nestpmc": {
       "max_solver_threads": 12,
       "inner_vars_threshold": 40,
@@ -47,7 +52,7 @@
   },
   "nesthdb": {
     "threshold_hybrid": 45,
-    "threshold_abstract": 0,
+    "threshold_abstract": 8,
     "max_recursion_depth": 1,
     "sat_solver": {
       "path": "<PATH-TO-PICOSAT>/picosat-965",
@@ -86,6 +91,16 @@
           "timeout": 10
         }
       ]
+    },
+    "asp_solver": {
+      "path": "clingo",
+      "output_parser": {
+        "class": "RegExReader",
+        "args": {
+          "pattern": "(SATISFIABLE|UNSATISFIABLE)"
+        },
+        "result": "result"
+      }
     },
     "elp_solver": {
       "path": "eclingo",
