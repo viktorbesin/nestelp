@@ -19,7 +19,7 @@
     "application_name": "dpdb-admin"
   },
   "htd": {
-    "path": "/home/viktor/Dokumente/htd/bin/htd_main",
+    "path": "<PATH-TO-htd>/htd_main",
     "parameters": [
       "--child-limit",
       "5"
@@ -70,7 +70,7 @@
       }
     },
     "pmc_solver": {
-      "path": "<PATH-TO-PROJCLINGO>>/projClingo-wrapper-1.0",
+      "path": "<PATH-TO-PROJCLINGO>/projClingo-wrapper-1.0",
       "output_parser": {
         "class": "RegExReader",
         "args": {
@@ -89,6 +89,11 @@
           "file": "guess_min_degree.lp",
           "size": 95,
           "timeout": 10
+        },
+        {
+          "file": "guess_increase.lp",
+          "size": 64,
+          "timeout": 35
         }
       ]
     },
