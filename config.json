@@ -107,12 +107,34 @@
         "result": "result"
       }
     },
+    "asp_count_solver": {
+      "path": "clingo",
+      "args": "-n 0",
+      "output_parser": {
+        "class": "RegExReader",
+        "args": {
+          "pattern": "Models       : (\\d+)"
+        },
+        "result": "result"
+      }
+    },
     "elp_solver": {
       "path": "eclingo",
       "output_parser": {
         "class": "RegExReader",
         "args": {
           "pattern": "(SATISFIABLE|UNSATISFIABLE)"
+        },
+        "result": "result"
+      }
+    },
+    "elp_count_solver": {
+      "path": "eclingo",
+      "args": "-n 0",
+      "output_parser": {
+        "class": "RegExReader",
+        "args": {
+          "pattern": "Answer: (\\d+)(?!\\n.*\\nAnswer:)"
         },
         "result": "result"
       }

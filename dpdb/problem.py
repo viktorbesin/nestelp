@@ -32,6 +32,7 @@ args.general = {
 }
 
 args.specific = {}
+args.nested = {}
 
 def node2tab(node):
     return f"td_node_{node.id}"

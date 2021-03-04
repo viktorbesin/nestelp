@@ -426,9 +426,9 @@ class ELPReader(Reader):
         _external_atom = -1
 
         # print grounded program
-        print("------------------------------------------------------------")
-        print("   Grounded Program")
-        print("------------------------------------------------------------")
+        # print("------------------------------------------------------------")
+        # print("   Grounded Program")
+        # print("------------------------------------------------------------")
         # pprint(eclingo_control.ground_program.objects)
         # print(eclingo_control.ground_program)
 
@@ -438,7 +438,8 @@ class ELPReader(Reader):
                 if (o.body == [] and len(o.head) == 1):
                     if not (o.choice):
                         self.clingo_facts.append(o)
-                self.clingo_rules.append(o)
+                else:
+                    self.clingo_rules.append(o)
             # OutputAtoms
             elif isinstance(o, eclingo.ClingoOutputAtom):
                 # remove _atom_to_be_released from atoms

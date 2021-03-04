@@ -134,7 +134,7 @@ class Writer(object):
 
         for r in rules:
             if (r['body'] == []):
-                # removing facts from rules could make this easier
+                # facts should only be in self.facts anyway
                 if(len(r['head']) == 1):
                     continue
                 # str_rules.append(f"{','.join([_get_symbol_for_atom(ha) for ha in r['head']])}.")

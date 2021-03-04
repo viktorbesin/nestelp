@@ -29,8 +29,6 @@ from dpdb.reader import CnfReader, ELPReader
 from dpdb.writer import FileWriter, StreamWriter, denormalize_cnf, normalize_cnf
 
 logger = logging.getLogger("nestHDB")
-#setup_logging("DEBUG")
-#setup_logging()
 setup_debug_sql()
 
 class Formula:
@@ -123,6 +121,11 @@ interrupted = False
 cache = {}
 
 class Problem:
+    @classmethod
+    def prepare_instance(cls, fname, args):
+        formula = Formula.from_file(fname)
+        return cls(formula,formula.vars,**vars(args))
+
     def __init__(self, formula, non_nested, depth=0, **kwargs):
         self.formula = formula
         self.projected = formula.projected
@@ -380,6 +383,11 @@ class Problem:
 
 
 class ELPProblem(Problem):
+    @classmethod
+    def prepare_instance(cls, fname, args):
+        elp = ELP.from_file(fname)
+        return cls(elp,elp.epistemic_atoms,**vars(args))
+
     def __init__(self, elp, non_nested, depth=0, **kwargs):
         self.elp = elp
         self.non_nested = non_nested
@@ -389,9 +397,7 @@ class ELPProblem(Problem):
         self.sub_problems = set()
         self.nested_problem = None
         self.active_process = None
-        for epistemic in self.elp.epistemic_atoms:
-            self.non_nested.add(epistemic)
-
+        self.count = kwargs.get('count_solutions')
 
     def preprocess(self):
         return
@@ -409,7 +415,6 @@ class ELPProblem(Problem):
 
     def call_solver(self, type):
         global cfg
-
         # logger.info(f"Call solver: {type} with #vars {self.formula.num_vars}, #clauses {len(self.formula.clauses)}, #projected {len(self.projected)}")
 
         cfg_str = f"{type}_solver"
@@ -418,21 +423,18 @@ class ELPProblem(Problem):
         local_cfg = cfg["nesthdb"][cfg_str]
         solver = [local_cfg["path"]]
 
+        assert ("output_parser" in cfg["nesthdb"][cfg_str])
+
         if "args" in local_cfg:
             solver.extend(local_cfg["args"].split(' '))
-        if "output_parser" in local_cfg:
-            solver_parser = local_cfg["output_parser"]
-            reader_module = importlib.import_module("dpdb.reader")
-            solver_parser_cls = getattr(reader_module, solver_parser["class"])
-        else:
-            # TODO
-            solver_parser = {"class":"CnfReader","args":{"silent":True},"result":"models"}
-            solver_parser_cls = CnfReader
+
+        solver_parser = local_cfg["output_parser"]
+        reader_module = importlib.import_module("dpdb.reader")
+        solver_parser_cls = getattr(reader_module, solver_parser["class"])
 
         tmp = tempfile.NamedTemporaryFile().name
         with FileWriter(tmp) as fw:
             fw.write_elp(self.elp.rules, self.elp.facts, self.elp.extra_atoms, self.elp.var_symbol_dict, self.elp.epistemic_atoms, self.elp.epistemic_not_atoms)
-            # for i in range(0,128,1):
             if interrupted:
                 return -1
             self.active_process = psolver = subprocess.Popen(solver + [tmp], stdout=subprocess.PIPE)
@@ -443,13 +445,7 @@ class ELPProblem(Problem):
             if interrupted:
                 return -1
 
-            result = True if getattr(output,solver_parser["result"]) == "SATISFIABLE" else False
-            # check return codes
-            # if psat.returncode == 245 or psat.returncode == 250:
-            #     logger.debug("Retrying call to external solver, returncode {}, index {}".format(psat.returncode, i))
-            # else:
-            #     logger.debug("No Retry, returncode {}, result {}, index {}".format(psat.returncode, result, i))
-            #     break
+            result = getattr(output,solver_parser["result"])
 
         logger.info(f"Solver {type} result: {result}")
         return result
@@ -458,23 +454,16 @@ class ELPProblem(Problem):
         if interrupted:
             return -1
 
-        return self.call_solver("elp")
+        return self.call_solver("elp_count") if self.count else self.call_solver("elp")
 
     def final_result(self,result):
-        final = result
-        #TODO
-        # if not self.kwargs["no_cache"]:
-        #     frozen_rules = frozenset([hashabledict(r) for r in self.elp.rules])
-        #     cache[frozen_rules] = final
+        if self.count:
+            final = int(result)
+        else:
+            final = True if result or result == "SATISFIABLE" else False
         return final
 
-    #TODO
     def get_cached(self):
-        # frozen_rules = frozenset([hashabledict(r) for r in self.elp.rules])
-        # if frozen_rules in cache:
-        #     return cache[frozen_rules]
-        # else:
-        #     return None
         return None
 
     def nestedelp(self):
@@ -505,7 +494,7 @@ class ELPProblem(Problem):
         self.nested_problem.solve()
         if interrupted:
             return -1
-        return self.nested_problem.sat
+        return self.nested_problem.model_count if self.count else self.nested_problem.sat
 
 
     def solve(self):
@@ -520,7 +509,7 @@ class ELPProblem(Problem):
         # no epistemic -> asp solve
         if len(self.elp.epistemic_atoms) == 0:
             logger.info("No epistemic atoms left")
-            return self.final_result(self.call_solver("asp"))
+            return self.final_result(self.call_solver("asp_count")) if self.count else self.final_result(self.call_solver("asp"))
 
         # max recursion depth -> classic solve
         if self.depth >= cfg["nesthdb"]["max_recursion_depth"]:
@@ -570,6 +559,9 @@ def read_input(fname):
     input = CnfReader.from_file(fname)
     return input.num_vars, input.vars, input.num_clauses, input.clauses, input.projected
 
+CLASS_MAP = {NestElp: ELPProblem.prepare_instance,
+                    NestPmc: Problem.prepare_instance}
+
 def main():
     global cfg
     arg_parser = setup_arg_parser("%(prog)s [general options] -f input-file")
@@ -580,8 +572,9 @@ def main():
 
     # formula = Formula.from_file(fname)
     # prob = Problem(formula,formula.vars,**vars(args))
-    elp = ELP.from_file(fname)
-    prob = ELPProblem(elp,elp.epistemic_atoms,**vars(args))
+    # elp = ELP.from_file(fname)
+    # prob = ELPProblem(elp,elp.epistemic_atoms,**vars(args))
+    prob = CLASS_MAP[vars(args)['cls']](fname, args)
 
     def signal_handler(sig, frame):
         if sig == signal.SIGUSR1:
@@ -600,6 +593,7 @@ def main():
     signal.signal(signal.SIGUSR1, signal_handler)
 
     result = prob.solve()
+    # TODO: change to classmethod
     logger.info(f"ELP: {'SATISFIABLE' if result else 'UNSATISFIABLE'}")
 
 if __name__ == "__main__":

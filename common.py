@@ -8,6 +8,7 @@ from dpdb.db import DEBUG_SQL
 from dpdb.reader import TdReader
 from dpdb.writer import StreamWriter, FileWriter
 from dpdb.treedecomp import TreeDecomp
+from dpdb.problem import args
 
 logger = logging.getLogger("common")
 
@@ -95,6 +96,28 @@ def setup_arg_parser(usage):
     gen_opts.add_argument("--gr-file", dest="gr_file", help="Store Graph file (htd Input)")
     gen_opts.add_argument("--faster", dest="faster", help="Store less information in database", action="store_true")
     gen_opts.add_argument("--parallel-setup", dest="parallel_setup", help="Perform setup in parallel", action="store_true")
+
+    problem_parsers = parser.add_subparsers(
+        title="problem types",
+        description="Type of problems that can be solved\n%(prog)s problem-type --help for additional information on each type and problem specific options",
+        metavar="problem-type",
+        help="Type of the problem to solve",
+        required=True
+    )
+
+    for cls, prob_args in args.nested.items():
+        options = {}
+        if "options" in prob_args:
+            options = prob_args.pop("options")
+        if "aliases" in prob_args:
+            prob_args["aliases"].insert(0,cls.__name__.lower())
+        else:
+            prob_args["aliases"] = [cls.__name__.lower()]
+        p = problem_parsers.add_parser(cls.__name__, **prob_args, usage="%(prog)s")
+        p.set_defaults(cls=cls)
+        prob_args["options"] = options
+        for arg, kwargs in options.items():
+            p.add_argument(arg,**kwargs)
 
     return parser
 
