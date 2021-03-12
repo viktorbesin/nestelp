@@ -128,24 +128,26 @@ class Writer(object):
             return f"{_neg} {symbol}"
 
         str_rules = []
+        print (rules)
         for f in facts:
-            # str_rules.append(f"{f}.")
+            str_rules.append(f"{f}.")
             self.writeline(f"{f}.")
 
         for r in rules:
             if (r['body'] == []):
                 # facts should only be in self.facts anyway
                 if(len(r['head']) == 1):
+                    str_rules.append(f"{_get_symbol_for_atom(r['head'][0])}.")
+                    self.writeline(f"{_get_symbol_for_atom(r['head'][0])}.")
                     continue
-                # str_rules.append(f"{','.join([_get_symbol_for_atom(ha) for ha in r['head']])}.")
+                str_rules.append(f"{','.join([_get_symbol_for_atom(ha) for ha in r['head']])}.")
                 self.writeline(f"{','.join([_get_symbol_for_atom(ha) for ha in r['head']])}.")
             else:
-                # str_rules.append(f"{','.join([_get_symbol_for_atom(ha) for ha in r['head']])} :- "
-                #        f"{','.join([_get_symbol_for_atom(ba, True) for ba in r['body']])}.")
+                str_rules.append(f"{','.join([_get_symbol_for_atom(ha) for ha in r['head']])} :- "
+                       f"{','.join([_get_symbol_for_atom(ba, True) for ba in r['body']])}.")
                 self.writeline(f"{','.join([_get_symbol_for_atom(ha) for ha in r['head']])} :- "
                        f"{','.join([_get_symbol_for_atom(ba, True) for ba in r['body']])}.")
-
-        # print ('\n'.join(str_rules))
+        print ('\n'.join(str_rules))
         self.flush()
 
 class StreamWriter(Writer):

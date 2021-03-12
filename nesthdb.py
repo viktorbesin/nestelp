@@ -445,7 +445,12 @@ class ELPProblem(Problem):
             if interrupted:
                 return -1
 
-            result = getattr(output,solver_parser["result"])
+            result = getattr(output, solver_parser["result"])
+            if self.count:
+                result = int(result)
+            else:
+                result = True if result == "SATISFIABLE" else False
+
 
         logger.info(f"Solver {type} result: {result}")
         return result
@@ -457,10 +462,12 @@ class ELPProblem(Problem):
         return self.call_solver("elp_count") if self.count else self.call_solver("elp")
 
     def final_result(self,result):
-        if self.count:
-            final = int(result)
-        else:
-            final = True if result or result == "SATISFIABLE" else False
+        final = result
+        # if self.count:
+        #     final = int(result)
+        # else:
+        #     final = True if result or result == "SATISFIABLE" else False
+        #     print (final)
         return final
 
     def get_cached(self):

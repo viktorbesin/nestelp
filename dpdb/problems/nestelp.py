@@ -52,6 +52,9 @@ class NestElp(Problem):
     def td_node_column_def(self, var):
         return (var2col(var), "BOOLEAN")
 
+    def introduce(self,node):
+        return "SELECT true val UNION ALL SELECT false UNION ALL SELECT null"
+
     def td_node_extra_columns(self):
         if self.count:
             return [("model_count","NUMERIC")]
@@ -197,29 +200,73 @@ class NestElp(Problem):
             where = []
             num_vars = len(node.all_vertices)
             rules = list(covered_rules)
-            for i, v in enumerate(vals):
-                if v != None:
-                    where.append("{} = {}".format(cols[i], v))
-                    n = node.vertices[i]
+            reduct = rules.copy()
+            constraints = []
+            undecided_constraints = []
 
+            for i, v in enumerate(vals):
+                where.append("{} = {}".format(cols[i], v)  if v != None else "{} is {}".format(cols[i], "null"))
+                n = node.vertices[i]
+                # build reduct
+                reduct = get_subjective_reduct(reduct, self.var_symbol_dict, self.extra_atoms, n, v)
+                if v != None:
+                    # use the opposite and check for empty set
+                    # TODO: check if still epistemic and build epistemic constraint (?)
                     if v:
-                        rules.append({'head': [], 'body': [n]})
+                        constraints.append({'head': [], 'body': [n]})
                     else:
-                        rules.append({'head': [], 'body': [(-1) * n]})
+                        constraints.append({'head': [], 'body': [(-1) * n]})
+                else:
+                    # TODO: undecided
+                    undecided_constraints.append(({'head': [], 'body': [n]}, {'head': [], 'body': [(-1) * n]}))
+
 
             epistemic_atoms = self.epistemic_atoms.intersection(node.all_vertices) - set(node.vertices)
 
             non_nested = self.non_nested.intersection(node.all_vertices) - set(node.vertices)
             logger.info(
-                f"Problem {self.id}: Calling recursive for bag {node.id}: {num_vars} {len(rules)} {len(epistemic_atoms)}")
+                f"Problem {self.id}: Calling recursive for bag {node.id}: {num_vars} {len(reduct)} {len(epistemic_atoms)}")
 
-            sat = self.rec_func(node.all_vertices, rules, self.facts, self.extra_atoms, self.var_symbol_dict,
-                                non_nested, epistemic_atoms, self.depth + 1, **self.kwargs)
+            sat = True
+            # base reduct satisfiable?
+            # idea: remove this call if there is a least one undecided literal
+            sat = sat and self.rec_func(node.all_vertices, reduct, self.facts, self.extra_atoms,
+                                             self.var_symbol_dict,
+                                             non_nested, epistemic_atoms, self.depth + 1, **self.kwargs)
+            # for all undecided literals check if both constraints ⊥←b and ⊥←¬b have answer sets
+            for constraint in undecided_constraints:
+                sat = sat and self.rec_func(node.all_vertices, reduct + [constraint[0]], self.facts, self.extra_atoms,
+                                    self.var_symbol_dict,
+                                    non_nested, epistemic_atoms, self.depth + 1, **self.kwargs)
+                sat = sat and self.rec_func(node.all_vertices, reduct + [constraint[1]], self.facts, self.extra_atoms,
+                                    self.var_symbol_dict,
+                                    non_nested, epistemic_atoms, self.depth + 1, **self.kwargs)
+                # sat_pos = self.rec_func(node.all_vertices, reduct + [constraint[0]], self.facts, self.extra_atoms,
+                #                             self.var_symbol_dict,
+                #                             non_nested, epistemic_atoms, self.depth + 1, **self.kwargs)
+                # sat_neg = self.rec_func(node.all_vertices, reduct + [constraint[1]], self.facts, self.extra_atoms,
+                #                             self.var_symbol_dict,
+                #                             non_nested, epistemic_atoms, self.depth + 1, **self.kwargs)
+                #
+                # sat = sat and sat_pos and sat_neg
+
+
+            # check for empty set -> cf. AAAI Listing 1 Line 4.1
+            # only if there are positive/negative values (and therefore constraints)
+            if (True in vals or False in vals):
+                sat = sat and not (self.rec_func(node.all_vertices, reduct+constraints, self.facts, self.extra_atoms, self.var_symbol_dict,
+                                    non_nested, epistemic_atoms, self.depth + 1, **self.kwargs))
+
             if not self.interrupted:
                 if self.count:
+                    # in case clingo is used: ignore the count and multiply with 1/0
+                    if (len(epistemic_atoms) == 0):
+                        sat = 1 if sat > 0 else 0
                     db.update(f"td_node_{node.id}", ["model_count"], ["model_count * {}::numeric".format(sat)], where)
                     db.commit()
                 else:
+                    print(where)
+                    print(sat)
                     if not sat:
                         db.delete(f"td_node_{node.id}", where)
                         db.commit()
