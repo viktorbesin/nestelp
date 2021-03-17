@@ -79,75 +79,65 @@ class Writer(object):
             self.writeline("{} 0".format(" ".join(map(str,c))))
         self.flush()
 
-    def write_elp(self, rules, facts, extra_atoms, var_symbol_dict, epistemic_atoms, epistemic_not_atoms):
-        def _get_main_atom(extra_atoms, atom):
-            keys = list(extra_atoms.keys())
-            vals = list(extra_atoms.values())
-            for val in vals:
-                if atom in val:
-                    return keys[vals.index(val)]
-            return -1
-
-        def _get_symbol_for_atom(atom, body=False):
-            if abs(atom) not in var_symbol_dict.keys():
+    def write_elp(self, elp):
+        def _get_symbol_for_atom(atom, head=False):
+            if abs(atom) not in elp.var_symbol_dict.keys():
                 return f"x_{abs(atom)}" if atom > 0 else f"not x_{abs(atom)}"
             if atom < 0:
                 _neg = "not"
             else:
                 _neg = ""
-            symbol = var_symbol_dict[abs(atom)]
+            symbol = elp.var_symbol_dict[abs(atom)]
 
             # check if its still epistemic
             if symbol.startswith("aux_not_sn_"):
-                if abs(atom) in epistemic_atoms or _get_main_atom(extra_atoms, abs(atom)) in epistemic_atoms:
-                    return f"{_neg} &k{{~ -{symbol[11:]}}}"
-                else:
-                    return f"{_neg} not -{symbol[11:]}"
+                if head:
+                    return f"-{symbol[11:]}"
+                return f"{_neg} &k{{~ -{symbol[11:]}}}" if len(elp.epistemic_atoms) > 0 else f"{_neg} -{symbol[11:]}"
             elif symbol.startswith("aux_sn_"):
-                if abs(atom) in epistemic_atoms or _get_main_atom(extra_atoms, abs(atom)) in epistemic_atoms:
-                    return f"{_neg} &k{{-{symbol[7:]}}}"
-                else:
-                    if atom < 0:
-                        return f"{_neg} -{symbol[7:]}"
-                    else:
-                        return f"{_neg} {_neg} -{symbol[7:]}"
+                if head:
+                    return f"-{symbol[7:]}"
+                return f"{_neg} &k{{-{symbol[7:]}}}" if len(elp.epistemic_atoms) > 0 else f"{_neg} -{symbol[7:]}"
             elif symbol.startswith("aux_not_"):
-                if abs(atom) in epistemic_atoms or _get_main_atom(extra_atoms, abs(atom)) in epistemic_atoms:
-                    return f"{_neg} &k{{~ {symbol[8:]}}}"
-                else:
-                    return f"{_neg} not {symbol[8:]}"
+                if head:
+                    return f"{symbol[8:]}"
+                return f"{_neg} &k{{~ {symbol[8:]}}}" if len(elp.epistemic_atoms) > 0 else f"{_neg} {symbol[8:]}"
             elif symbol.startswith("aux_"):
-                if abs(atom) in epistemic_atoms or _get_main_atom(extra_atoms, abs(atom)) in epistemic_atoms:
-                    return f"{_neg} &k{{{symbol[4:]}}}"
-                else:
-                    if atom < 0:
-                        return f"{_neg} {symbol[4:]}"
-                    else:
-                        return f"{_neg} {_neg} {symbol[4:]}"
+                if head:
+                    return f"{symbol[4:]}"
+                return f"{_neg} &k{{{symbol[4:]}}}" if len(elp.epistemic_atoms) > 0 else f"{_neg} {symbol[4:]}"
 
             return f"{_neg} {symbol}"
 
         str_rules = []
-        print (rules)
-        for f in facts:
-            str_rules.append(f"{f}.")
-            self.writeline(f"{f}.")
 
-        for r in rules:
+        for cr in elp.choice_rules:
+            str_rules.append(f"{{ {_get_symbol_for_atom(cr['head'][0])} }}.")
+            self.writeline(f"{{ {_get_symbol_for_atom(cr['head'][0])} }}.")
+
+        for r in elp.rules:
             if (r['body'] == []):
-                # facts should only be in self.facts anyway
-                if(len(r['head']) == 1):
-                    str_rules.append(f"{_get_symbol_for_atom(r['head'][0])}.")
-                    self.writeline(f"{_get_symbol_for_atom(r['head'][0])}.")
+                # TODO: cancel earlier to save time
+                if (len(r['head']) == 0):
+                    str_rules.append(f":- .")
+                    self.writeline(f":- .")
                     continue
-                str_rules.append(f"{','.join([_get_symbol_for_atom(ha) for ha in r['head']])}.")
-                self.writeline(f"{','.join([_get_symbol_for_atom(ha) for ha in r['head']])}.")
+                if(len(r['head']) == 1):
+                    str_rules.append(f"{_get_symbol_for_atom(r['head'][0], True)}.")
+                    self.writeline(f"{_get_symbol_for_atom(r['head'][0], True)}.")
+                    continue
+                str_rules.append(f"{','.join([_get_symbol_for_atom(ha, True) for ha in r['head']])}.")
+                self.writeline(f"{','.join([_get_symbol_for_atom(ha, True) for ha in r['head']])}.")
             else:
-                str_rules.append(f"{','.join([_get_symbol_for_atom(ha) for ha in r['head']])} :- "
-                       f"{','.join([_get_symbol_for_atom(ba, True) for ba in r['body']])}.")
-                self.writeline(f"{','.join([_get_symbol_for_atom(ha) for ha in r['head']])} :- "
-                       f"{','.join([_get_symbol_for_atom(ba, True) for ba in r['body']])}.")
-        print ('\n'.join(str_rules))
+                str_rules.append(f"{','.join([_get_symbol_for_atom(ha, True) for ha in r['head']])} :- "
+                       f"{','.join([_get_symbol_for_atom(ba) for ba in r['body']])}.")
+                self.writeline(f"{','.join([_get_symbol_for_atom(ha, True) for ha in r['head']])} :- "
+                       f"{','.join([_get_symbol_for_atom(ba) for ba in r['body']])}.")
+
+        for ec in elp.epistemic_constraints:
+            str_rules.append(ec)
+            self.writeline(ec)
+        # print ('\n'.join(str_rules))
         self.flush()
 
 class StreamWriter(Writer):

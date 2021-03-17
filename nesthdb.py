@@ -48,21 +48,22 @@ class Formula:
         return cls(input.vars, input.clauses, input.projected)
 
 class ELP:
-    def __init__(self, atoms, rules, facts, extra_atoms, epistemic_atoms, epistemic_not_atoms, var_symbol_dict):
+    def __init__(self, atoms, rules, choice_rules, extra_atoms, epistemic_atoms, epistemic_not_atoms, epistemic_constraints, var_symbol_dict):
         self.atoms = atoms
         self.rules = rules
-        self.facts = facts
+        self.choice_rules = choice_rules
         self.epistemic_atoms = epistemic_atoms
         self.epistemic_not_atoms = epistemic_not_atoms
         self.var_symbol_dict = var_symbol_dict
         self.extra_atoms = extra_atoms
+        self.epistemic_constraints = epistemic_constraints
 
         self.var_rule_dict = defaultdict(set)
 
     @classmethod
     def from_file(cls, fname):
         input = ELPReader.from_file(fname)
-        return cls(input.atoms, input.rules, input.facts, input.extra_atoms, input.epistemic_atoms, input.epistemic_not_atoms, input.var_symbol_dict)
+        return cls(input.atoms, input.rules, input.choice_rules, input.extra_atoms, input.epistemic_atoms, input.epistemic_not_atoms, [], input.var_symbol_dict)
 
 
 class Graph:
@@ -390,7 +391,7 @@ class ELPProblem(Problem):
 
     def __init__(self, elp, non_nested, depth=0, **kwargs):
         self.elp = elp
-        self.non_nested = non_nested
+        self.non_nested = elp.atoms
         self.non_nested_orig = non_nested
         self.depth = depth
         self.kwargs = kwargs
@@ -434,7 +435,7 @@ class ELPProblem(Problem):
 
         tmp = tempfile.NamedTemporaryFile().name
         with FileWriter(tmp) as fw:
-            fw.write_elp(self.elp.rules, self.elp.facts, self.elp.extra_atoms, self.elp.var_symbol_dict, self.elp.epistemic_atoms, self.elp.epistemic_not_atoms)
+            fw.write_elp(self.elp)
             if interrupted:
                 return -1
             self.active_process = psolver = subprocess.Popen(solver + [tmp], stdout=subprocess.PIPE)
@@ -447,7 +448,7 @@ class ELPProblem(Problem):
 
             result = getattr(output, solver_parser["result"])
             if self.count:
-                result = int(result)
+                result = int(result) if result else 0
             else:
                 result = True if result == "SATISFIABLE" else False
 
@@ -463,11 +464,6 @@ class ELPProblem(Problem):
 
     def final_result(self,result):
         final = result
-        # if self.count:
-        #     final = int(result)
-        # else:
-        #     final = True if result or result == "SATISFIABLE" else False
-        #     print (final)
         return final
 
     def get_cached(self):
@@ -492,7 +488,7 @@ class ELPProblem(Problem):
         self.nested_problem.set_recursive(self.solve_rec,self.depth)
         if interrupted:
             return -1
-        self.nested_problem.set_input(self.graph.num_nodes,-1,self.elp.epistemic_atoms,self.elp.epistemic_not_atoms,self.non_nested_orig,self.elp.var_rule_dict,self.elp.facts,self.elp.var_symbol_dict,self.elp.extra_atoms)
+        self.nested_problem.set_input(self.graph.num_nodes,-1,self.non_nested_orig,self.elp)
         if interrupted:
             return -1
         self.nested_problem.setup()
@@ -507,6 +503,8 @@ class ELPProblem(Problem):
     def solve(self):
         self.preprocess()
 
+        self.non_nested = self.non_nested.intersection(self.elp.epistemic_atoms)
+
         if not self.kwargs["no_cache"]:
             cached = self.get_cached()
             if cached != None:
@@ -514,12 +512,13 @@ class ELPProblem(Problem):
                 return cached
 
         # no epistemic -> asp solve
-        if len(self.elp.epistemic_atoms) == 0:
+        if len(self.elp.epistemic_atoms.intersection(self.elp.atoms)) == 0 and len(self.elp.epistemic_constraints) == 0:
             logger.info("No epistemic atoms left")
             return self.final_result(self.call_solver("asp_count")) if self.count else self.final_result(self.call_solver("asp"))
 
         # max recursion depth -> classic solve
         if self.depth >= cfg["nesthdb"]["max_recursion_depth"]:
+            logger.info("Maximal recursion depth")
             return self.final_result(self.solve_classic())
 
         self.decompose_nested_primal()
@@ -542,10 +541,12 @@ class ELPProblem(Problem):
 
         return self.final_result(self.nestedelp())
 
-    def solve_rec(self, atoms, rules, facts, extra_atoms, var_symbol_dict, non_nested, epistemic_atoms, epistemic_not_atoms, depth=0, **kwargs):
+    def solve_rec(self, atoms, rules, choice_rules, extra_atoms, var_symbol_dict, non_nested, epistemic_atoms, epistemic_not_atoms, epistemic_constraints, depth=0, **kwargs):
         if interrupted:
             return -1
-        p = ELPProblem(ELP(atoms, rules, facts, extra_atoms, epistemic_atoms, epistemic_not_atoms, var_symbol_dict), non_nested, depth, **kwargs)
+
+        p = ELPProblem(ELP(atoms, rules, choice_rules, extra_atoms, epistemic_atoms, epistemic_not_atoms, epistemic_constraints, var_symbol_dict), non_nested, depth, **kwargs)
+
         self.sub_problems.add(p)
         result = p.solve()
         self.sub_problems.remove(p)
@@ -577,10 +578,6 @@ def main():
     cfg = read_cfg(args.config)
     fname = args.file
 
-    # formula = Formula.from_file(fname)
-    # prob = Problem(formula,formula.vars,**vars(args))
-    # elp = ELP.from_file(fname)
-    # prob = ELPProblem(elp,elp.epistemic_atoms,**vars(args))
     prob = CLASS_MAP[vars(args)['cls']](fname, args)
 
     def signal_handler(sig, frame):

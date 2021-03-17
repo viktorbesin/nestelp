@@ -71,30 +71,57 @@ def covered_extra_rules(rules, vertices, extra_atoms):
 
 def get_subjective_reduct(rules, var_symbol_dict, extra_atoms, n, v):
     reduct = []
-    for atom in [n] + extra_atoms[n] if n in extra_atoms.keys() else [n]:
-        symbol = var_symbol_dict[atom]
-        if symbol.startswith("aux_"):
 
-            for r in rules:
-                if atom in r['body']:
-                    # remove it from body -> True
-                    if v:
-                        reduct.append({'head': r['head'], 'body': [b for b in r['body'] if not b == atom]})
-                    # remove the rule -> False
-                    else:
-                        continue
-                elif (-1)*atom in r['body']:
-                    # remove the rule -> not True
-                    if v:
-                        continue
-                    # remove it from body -> not False
-                    else:
-                        reduct.append({'head': r['head'], 'body': [b for b in r['body'] if not b == (-1)*atom]})
+    atoms = [n] + extra_atoms[n] if n in extra_atoms.keys() else [n]
+    atoms = [n for n in atoms if var_symbol_dict[n].startswith("aux_")]
+
+    for r in rules:
+        app = r
+        for atom in atoms:
+            _v = v
+            _not = True if var_symbol_dict[atom].startswith("aux_not") else False
+            if _not:
+                _v = False if v else True
+
+            if atom in r['body']:
+                # remove it from body -> True
+                if _v:
+                    app = {'head': app['head'], 'body': [b for b in app['body'] if not b in atoms]}
+                # remove the rule -> False
                 else:
-                    reduct.append(r)
+                    app = None
+                    break
+            elif (-1) * atom in r['body']:
+                # remove the rule -> not True
+                if _v:
+                    app = None
+                    break
+                # remove it from body -> not False
+                else:
+                    app = {'head': app['head'], 'body': [b for b in app['body'] if not b == (-1) * atom]}
+        if app == None:
+            continue
+        else:
+            reduct.append(app)
 
     return reduct
 
+
+def get_epistemic_constraints(pn_constraint, undecided_constraints, var_symbol_dict):
+    epistemic_constraints = []
+    for ba in pn_constraint['body']:
+        symbol = var_symbol_dict[abs(ba)]
+        if ba < 0:
+            epistemic_constraints.append(f":- not &k{{~{symbol}}}.")
+        else:
+            epistemic_constraints.append(f":- not &k{{{symbol}}}.")
+
+    for ua in undecided_constraints:
+        symbol = var_symbol_dict[abs(ua[0]['body'][0])]
+        epistemic_constraints.append(f":- &k{{{symbol}}}.")
+        epistemic_constraints.append(f":- &k{{~{symbol}}}.")
+
+    return epistemic_constraints
 
 def _get_main_atom(extra_atoms, atom):
     keys = list(extra_atoms.keys())
@@ -105,12 +132,45 @@ def _get_main_atom(extra_atoms, atom):
             return keys[vals.index(val)]
     return -1
 
-def get_fact(atom, var_symbol_dict):
-    if(atom > 0):
-        return f"{var_symbol_dict[atom]}"
-    else:
-        if var_symbol_dict[abs(atom)].startswith('-'):
-            return f"{var_symbol_dict[abs(atom)][1:]}"
+def write_current_elp(rules, extra_atoms, choice_rules, var_symbol_dict):
+    def _get_symbol_for_atom(atom, body=False):
+        if abs(atom) not in var_symbol_dict.keys():
+            return f"x_{abs(atom)}" if atom > 0 else f"not x_{abs(atom)}"
+        if atom < 0:
+            _neg = "not"
         else:
-            return f"-{var_symbol_dict[abs(atom)]}"
+            _neg = ""
+        symbol = var_symbol_dict[abs(atom)]
+
+        # check if its epistemic
+        if symbol.startswith("aux_not_sn_"):
+            return f"{_neg} &k{{~ -{symbol[11:]}}}"
+        elif symbol.startswith("aux_sn_"):
+            return f"{_neg} &k{{-{symbol[7:]}}}"
+        elif symbol.startswith("aux_not_"):
+            return f"{_neg} &k{{~ {symbol[8:]}}}"
+        elif symbol.startswith("aux_"):
+            return f"{_neg} &k{{{symbol[4:]}}}"
+
+        return f"{_neg} {symbol}"
+
+    str_rules = []
+    for cr in choice_rules:
+        str_rules.append(f"{{ {_get_symbol_for_atom(cr['head'][0])} }}.")
+
+    for r in rules:
+        if (r['body'] == []):
+            # TODO: cancel earlier to save time
+            if (len(r['head']) == 0):
+                str_rules.append(f":- .")
+                continue
+            # facts should only be in self.facts anyway
+            if(len(r['head']) == 1):
+                str_rules.append(f"{_get_symbol_for_atom(r['head'][0])}.")
+                continue
+            str_rules.append(f"{','.join([_get_symbol_for_atom(ha) for ha in r['head']])}.")
+        else:
+            str_rules.append(f"{','.join([_get_symbol_for_atom(ha) for ha in r['head']])} :- "
+                   f"{','.join([_get_symbol_for_atom(ba, True) for ba in r['body']])}.")
+    print('\n'.join(str_rules))
 

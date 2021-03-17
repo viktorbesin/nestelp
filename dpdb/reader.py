@@ -438,6 +438,8 @@ class ELPReader(Reader):
                 if (o.body == [] and len(o.head) == 1):
                     if not (o.choice):
                         self.clingo_facts.append(o)
+                    else:
+                        self.choice_rules.append(o)
                 else:
                     self.clingo_rules.append(o)
             # OutputAtoms
@@ -449,9 +451,10 @@ class ELPReader(Reader):
                 if (o.atom != 0):
                     self.var_symbol_dict[o.atom] = str(o.symbol)
                     self.symbol_var_dict[str(o.symbol)] = o.atom
+                    self.atoms.add(o.atom)
                 else:
                     self.facts.add(o.symbol)
-                self.atoms.add(o.atom)
+
 
         # add unmatched atoms
         for r in self.clingo_rules:
@@ -477,10 +480,33 @@ class ELPReader(Reader):
                              if not (item.choice or  # filter 1
                                      _external_atom in item.body)] # or  # filter 2
 
+        # save choice rules for not-auxilaries
+        self.choice_rules = [item for item in self.choice_rules if not self.var_symbol_dict[item.head[0]].startswith("aux_")]
+        self.choice_rules = [{'head': [v for v in cr.head], 'body': []} for cr in self.choice_rules]
+
         self.rules = [{'head': [v for v in cr.head], 'body': [v for v in cr.body]} for cr in self.clingo_rules]
 
+        # add facts
+        facts = []
+        for f in self.facts:
+            f = str(f)
+            if f in self.symbol_var_dict.keys():
+                facts.append({'head': [self.symbol_var_dict[f]], 'body': []})
+            else:
+                if f"aux_not_sn_{f[1:]}" in self.symbol_var_dict.keys():
+                    facts.append({'head': [self.symbol_var_dict[f"aux_not_sn_{f[1:]}"]], 'body': []})
+                elif f"aux_sn_{f[1:]}" in self.symbol_var_dict.keys():
+                    facts.append({'head': [self.symbol_var_dict[f"aux_sn_{f[1:]}"]], 'body': []})
+                elif f"aux_not_{f}" in self.symbol_var_dict.keys():
+                    facts.append({'head': [self.symbol_var_dict[f"aux_not_{f}"]], 'body': []})
+                elif f"aux_{f}" in self.symbol_var_dict.keys():
+                    facts.append({'head': [self.symbol_var_dict[f"aux_{f}"]], 'body': []})
+
+        self.rules = self.rules + facts
+
         # pprint(self.rules)
-        # print(self.var_symbol_dict)
+        # print (self.choice_rules)
+        # pprint(self.var_symbol_dict)
         # print(self.atoms)
         # print(self.facts)
         # print(self.epistemic_atoms)
