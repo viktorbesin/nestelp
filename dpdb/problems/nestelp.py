@@ -241,13 +241,16 @@ class NestElp(Problem):
                                     non_nested, epistemic_atoms, self.epistemic_not_atoms, epistemic_constraints, self.depth + 1,
                                     **self.kwargs)
 
-            elif not self.count:
+            else:
+                kwargs_sat = self.kwargs.copy()
+                kwargs_sat['count_solutions'] = False
+
                 # base reduct satisfiable?
                 # count: number of wv's for reduct
                 # idea: remove this call if there is a least one undecided literal
                 sat = self.rec_func(node.all_vertices, reduct, choice_rules, self.extra_atoms,
                                     self.var_symbol_dict,
-                                    non_nested, epistemic_atoms, self.epistemic_not_atoms, [], self.depth+1, **self.kwargs)
+                                    non_nested, epistemic_atoms, self.epistemic_not_atoms, [], self.depth+1, **kwargs_sat)
 
                 # check for empty set -> cf. AAAI Listing 1 Line 4.1
                 # only if there are positive/negative values (and therefore constraints)
@@ -255,53 +258,32 @@ class NestElp(Problem):
                     sat = sat and not (
                         self.rec_func(node.all_vertices, reduct + [pn_constraint], choice_rules, self.extra_atoms,
                                       self.var_symbol_dict,
-                                      non_nested, epistemic_atoms, self.epistemic_not_atoms, [], self.depth+1, **self.kwargs))
+                                      non_nested, epistemic_atoms, self.epistemic_not_atoms, [], self.depth+1, **kwargs_sat))
+
+
+                if len(undecided_constraints) > 0:
+                    epistemic_constraints = epistemic_constraints + get_epistemic_constraints(None,
+                                                                                              undecided_constraints,
+                                                                                              self.var_symbol_dict)
+                    sat = sat and self.rec_func(node.all_vertices, reduct, choice_rules, self.extra_atoms,
+                                        self.var_symbol_dict,
+                                        non_nested, epistemic_atoms, self.epistemic_not_atoms, epistemic_constraints,
+                                        self.depth + 1,
+                                        **kwargs_sat)
 
                 # for all undecided literals check if both constraints ⊥←b and ⊥←¬b have answer sets
-                if not _sub_epistemic:
-                    for constraint in undecided_constraints:
-                        sat = sat and self.rec_func(node.all_vertices, reduct + [constraint[0]], choice_rules,
-                                                    self.extra_atoms,
-                                                    self.var_symbol_dict,
-                                                    non_nested, epistemic_atoms, self.epistemic_not_atoms, [], self.depth+1, **self.kwargs)
-                        sat = sat and self.rec_func(node.all_vertices, reduct + [constraint[1]], choice_rules,
-                                                    self.extra_atoms,
-                                                    self.var_symbol_dict,
-                                                    non_nested, epistemic_atoms, self.epistemic_not_atoms, [], self.depth+1, **self.kwargs)
-            else:
-                # base reduct satisfiable?
-                # count: number of wv's for reduct
-                sat = self.rec_func(node.all_vertices, reduct, choice_rules, self.extra_atoms,
-                                    self.var_symbol_dict,
-                                    non_nested, epistemic_atoms, self.epistemic_not_atoms, [], self.depth+1, **self.kwargs)
-                if not _sub_epistemic:
-                    sat = 1 if sat > 0 else 0
+                # for constraint in undecided_constraints:
+                #     sat = sat and self.rec_func(node.all_vertices, reduct + [constraint[0]], choice_rules,
+                #                                 self.extra_atoms,
+                #                                 self.var_symbol_dict,
+                #                                 non_nested, epistemic_atoms, self.epistemic_not_atoms, [], self.depth+1, **kwargs_sat)
+                #     sat = sat and self.rec_func(node.all_vertices, reduct + [constraint[1]], choice_rules,
+                #                                 self.extra_atoms,
+                #                                 self.var_symbol_dict,
+                #                                 non_nested, epistemic_atoms, self.epistemic_not_atoms, [], self.depth+1, **kwargs_sat)
 
-                # check for empty set -> cf. AAAI Listing 1 Line 4.1
-                # only if there are wv's and there are positive/negative values (and therefore constraints)
-                if sat > 0 and (True in vals or False in vals):
-                    # TODO: improve by calling existence instead of counting?
-                    sub_sat = self.rec_func(node.all_vertices, reduct + [pn_constraint], choice_rules, self.extra_atoms,
-                                            self.var_symbol_dict,
-                                            non_nested, epistemic_atoms, self.epistemic_not_atoms,[], self.depth+1, **self.kwargs)
-                    sat = sat if not sub_sat else 0
-
-                # for all undecided literals check if both constraints ⊥←b and ⊥←¬b have answer sets
-                if sat > 0:
-                    for constraint in undecided_constraints:
-                        sub_sat = self.rec_func(node.all_vertices, reduct + [constraint[0]], choice_rules,
-                                                        self.extra_atoms,
-                                                        self.var_symbol_dict,
-                                                        non_nested, epistemic_atoms, self.epistemic_not_atoms,[], self.depth+1,
-                                                        **self.kwargs) and \
-                                  self.rec_func(node.all_vertices,
-                                                reduct + [constraint[1]],
-                                                choice_rules,
-                                                self.extra_atoms,
-                                                self.var_symbol_dict,
-                                                non_nested, epistemic_atoms, self.epistemic_not_atoms, [],
-                                                self.depth+1, **self.kwargs)
-                        sat = sat if sub_sat else 0
+                if self.count:
+                    sat = 1 if sat else 0
 
             if not self.interrupted:
                 if self.count:
