@@ -79,7 +79,7 @@ def get_subjective_reduct(rules, var_symbol_dict, extra_atoms, n, v):
         app = r
         for atom in atoms:
             _v = v
-            _not = True if var_symbol_dict[atom].startswith("aux_not") else False
+            _not = True if var_symbol_dict[atom].startswith("aux_not_") else False
             if _not:
                 _v = False if v else True
 
