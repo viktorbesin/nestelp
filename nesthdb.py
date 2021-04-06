@@ -382,6 +382,8 @@ class Problem:
             if self.active_process.poll() is None:
                 self.active_process.send_signal(signal.SIGTERM)
 
+    def output_result(self, result):
+        return f"PMC: {result}"
 
 class ELPProblem(Problem):
     @classmethod
@@ -438,7 +440,7 @@ class ELPProblem(Problem):
             fw.write_elp(self.elp)
             if interrupted:
                 return -1
-            self.active_process = psolver = subprocess.Popen(solver + [tmp], stdout=subprocess.PIPE)
+            self.active_process = psolver = subprocess.Popen(solver + [tmp], stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.DEVNULL)
             output = solver_parser_cls.from_stream(psolver.stdout,**solver_parser["args"])
             psolver.wait()
             psolver.stdout.close()
@@ -514,7 +516,11 @@ class ELPProblem(Problem):
         # no epistemic -> asp solve
         if len(self.elp.epistemic_atoms.intersection(self.elp.atoms)) == 0 and len(self.elp.epistemic_constraints) == 0:
             logger.info("No epistemic atoms left")
-            return self.final_result(self.call_solver("asp_count")) if self.count else self.final_result(self.call_solver("asp"))
+            return self.final_result(self.call_solver("asp"))
+
+        if len(self.elp.epistemic_atoms.intersection(self.elp.atoms)) == 0 and len(self.elp.epistemic_constraints) > 0:
+            logger.info("No epistemic atoms left, epistemic constraints present")
+            return self.final_result(self.call_solver("elp_count")) if self.count else self.final_result(self.call_solver("elp"))
 
         # max recursion depth -> classic solve
         if self.depth >= cfg["nesthdb"]["max_recursion_depth"]:
@@ -544,7 +550,6 @@ class ELPProblem(Problem):
     def solve_rec(self, atoms, rules, choice_rules, extra_atoms, var_symbol_dict, non_nested, epistemic_atoms, epistemic_not_atoms, epistemic_constraints, depth=0, **kwargs):
         if interrupted:
             return -1
-
         p = ELPProblem(ELP(atoms, rules, choice_rules, extra_atoms, epistemic_atoms, epistemic_not_atoms, epistemic_constraints, var_symbol_dict), non_nested, depth, **kwargs)
 
         self.sub_problems.add(p)
@@ -562,6 +567,12 @@ class ELPProblem(Problem):
         if self.active_process != None:
             if self.active_process.poll() is None:
                 self.active_process.send_signal(signal.SIGTERM)
+
+    def output_result(self, result):
+        if self.count:
+            return f"Problem has {result} world view(s)"
+        else:
+            return f"ELP: {'SATISFIABLE' if result else 'UNSATISFIABLE'}"
 
 def read_input(fname):
     input = CnfReader.from_file(fname)
@@ -597,8 +608,7 @@ def main():
     signal.signal(signal.SIGUSR1, signal_handler)
 
     result = prob.solve()
-    # TODO: change to classmethod
-    logger.info(f"ELP: {'SATISFIABLE' if result else 'UNSATISFIABLE'}")
+    logger.info(prob.output_result(result))
 
 if __name__ == "__main__":
     main()

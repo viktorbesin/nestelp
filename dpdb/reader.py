@@ -42,8 +42,8 @@ class RegExReader(Reader):
         if m:
             self.result = m.group(1)
         else:
-            logger.error("Unable to parse input {0}".format(string))
-
+            self.result = 0
+            # logger.error("Unable to parse input {0}".format(string))
 
 class SciNumberRegExReader(RegExReader):
     def __init__(self, pattern, silent=False):

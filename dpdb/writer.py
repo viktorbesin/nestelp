@@ -112,30 +112,30 @@ class Writer(object):
         str_rules = []
 
         for cr in elp.choice_rules:
-            str_rules.append(f"{{ {_get_symbol_for_atom(cr['head'][0])} }}.")
+            # str_rules.append(f"{{ {_get_symbol_for_atom(cr['head'][0])} }}.")
             self.writeline(f"{{ {_get_symbol_for_atom(cr['head'][0])} }}.")
 
         for r in elp.rules:
             if (r['body'] == []):
                 # TODO: cancel earlier to save time
                 if (len(r['head']) == 0):
-                    str_rules.append(f":- .")
+                    # str_rules.append(f":- .")
                     self.writeline(f":- .")
                     continue
                 if(len(r['head']) == 1):
-                    str_rules.append(f"{_get_symbol_for_atom(r['head'][0], True)}.")
+                    # str_rules.append(f"{_get_symbol_for_atom(r['head'][0], True)}.")
                     self.writeline(f"{_get_symbol_for_atom(r['head'][0], True)}.")
                     continue
-                str_rules.append(f"{','.join([_get_symbol_for_atom(ha, True) for ha in r['head']])}.")
+                # str_rules.append(f"{','.join([_get_symbol_for_atom(ha, True) for ha in r['head']])}.")
                 self.writeline(f"{','.join([_get_symbol_for_atom(ha, True) for ha in r['head']])}.")
             else:
-                str_rules.append(f"{','.join([_get_symbol_for_atom(ha, True) for ha in r['head']])} :- "
-                       f"{','.join([_get_symbol_for_atom(ba) for ba in r['body']])}.")
+                # str_rules.append(f"{','.join([_get_symbol_for_atom(ha, True) for ha in r['head']])} :- "
+                #        f"{','.join([_get_symbol_for_atom(ba) for ba in r['body']])}.")
                 self.writeline(f"{','.join([_get_symbol_for_atom(ha, True) for ha in r['head']])} :- "
                        f"{','.join([_get_symbol_for_atom(ba) for ba in r['body']])}.")
 
         for ec in elp.epistemic_constraints:
-            str_rules.append(ec)
+            # str_rules.append(ec)
             self.writeline(ec)
         # print ('\n'.join(str_rules))
         self.flush()

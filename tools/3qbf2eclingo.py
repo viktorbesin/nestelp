@@ -72,7 +72,7 @@ if qbf[0][0][0] != 'e':
 
 maxvar=0 # keeps track of highest variable so far
 
-# in order to keep vairable order of matrix, start with matrix:
+# in order to keep variable order of matrix, start with matrix:
 clausenum=0 # keeps track of # of clauses
 auxvar=None
 
