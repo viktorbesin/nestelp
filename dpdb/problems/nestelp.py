@@ -230,12 +230,11 @@ class NestElp(Problem):
             logger.info(
                 f"Problem {self.id}: Calling recursive for bag {node.id}: {num_vars} {len(reduct)} {len(epistemic_atoms)}")
 
-            _sub_epistemic = len(epistemic_atoms) > 0 or len(self.epistemic_constraints) > 0
-            epistemic_constraints = self.epistemic_constraints
+            epistemic_constraints = get_relevant_constraints(self.epistemic_constraints, node.all_vertices)
+            _sub_epistemic = len(epistemic_atoms) > 0 or not constraints_is_empty(epistemic_constraints)
 
             if _sub_epistemic:
-                epistemic_constraints = epistemic_constraints + get_epistemic_constraints(pn_constraint, undecided_constraints, self.var_symbol_dict)
-
+                epistemic_constraints = get_epistemic_constraints(epistemic_constraints, pn_constraint, undecided_constraints)
                 sat = self.rec_func(node.all_vertices, rules, choice_rules, self.extra_atoms,
                                     self.var_symbol_dict,
                                     non_nested, epistemic_atoms, self.epistemic_not_atoms, epistemic_constraints, self.depth + 1,
@@ -250,7 +249,7 @@ class NestElp(Problem):
                 # idea: remove this call if there is a least one undecided literal
                 sat = self.rec_func(node.all_vertices, reduct, choice_rules, self.extra_atoms,
                                     self.var_symbol_dict,
-                                    non_nested, epistemic_atoms, self.epistemic_not_atoms, [], self.depth+1, **kwargs_sat)
+                                    non_nested, epistemic_atoms, self.epistemic_not_atoms, epistemic_constraints, self.depth+1, **kwargs_sat)
 
                 # check for empty set -> cf. AAAI Listing 1 Line 4.1
                 # only if there are positive/negative values (and therefore constraints)
@@ -258,13 +257,11 @@ class NestElp(Problem):
                     sat = sat and not (
                         self.rec_func(node.all_vertices, reduct + [pn_constraint], choice_rules, self.extra_atoms,
                                       self.var_symbol_dict,
-                                      non_nested, epistemic_atoms, self.epistemic_not_atoms, [], self.depth+1, **kwargs_sat))
+                                      non_nested, epistemic_atoms, self.epistemic_not_atoms, epistemic_constraints, self.depth+1, **kwargs_sat))
 
-
+                # use epistemic constraints to test undecided atoms
                 if len(undecided_constraints) > 0:
-                    epistemic_constraints = epistemic_constraints + get_epistemic_constraints(None,
-                                                                                              undecided_constraints,
-                                                                                              self.var_symbol_dict)
+                    epistemic_constraints = get_epistemic_constraints(self.epistemic_constraints, None, undecided_constraints)
                     sat = sat and self.rec_func(node.all_vertices, reduct, choice_rules, self.extra_atoms,
                                         self.var_symbol_dict,
                                         non_nested, epistemic_atoms, self.epistemic_not_atoms, epistemic_constraints,
@@ -276,11 +273,11 @@ class NestElp(Problem):
                 #     sat = sat and self.rec_func(node.all_vertices, reduct + [constraint[0]], choice_rules,
                 #                                 self.extra_atoms,
                 #                                 self.var_symbol_dict,
-                #                                 non_nested, epistemic_atoms, self.epistemic_not_atoms, [], self.depth+1, **kwargs_sat)
+                #                                 non_nested, epistemic_atoms, self.epistemic_not_atoms, epistemic_constraints, self.depth+1, **kwargs_sat)
                 #     sat = sat and self.rec_func(node.all_vertices, reduct + [constraint[1]], choice_rules,
                 #                                 self.extra_atoms,
                 #                                 self.var_symbol_dict,
-                #                                 non_nested, epistemic_atoms, self.epistemic_not_atoms, [], self.depth+1, **kwargs_sat)
+                #                                 non_nested, epistemic_atoms, self.epistemic_not_atoms, epistemic_constraints, self.depth+1, **kwargs_sat)
 
                 if self.count:
                     sat = 1 if sat else 0
@@ -303,14 +300,13 @@ class NestElp(Problem):
         if self.count:
             sum_count = self.db.replace_dynamic_tabs(f"(select coalesce(sum(model_count),0) from {root_tab})")
             self.db.ignore_next_praefix()
-            self.model_count = \
-            self.db.update("problem_elp_count", ["model_count"], [sum_count], [f"ID = {self.id}"], "model_count")[0]
-            logger.info("Problem has %d world view(s)", self.model_count)
+            self.model_count = self.db.update("problem_elp_count", ["model_count"], [sum_count], [f"ID = {self.id}"], "model_count")[0]
+            # logger.info("Problem has %d world view(s)", self.model_count)
         else:
             is_sat = self.db.replace_dynamic_tabs(f"(select exists(select 1 from {root_tab}))")
             self.db.ignore_next_praefix()
             self.sat = self.db.update("problem_elp", ["is_sat"], [is_sat], [f"ID = {self.id}"], "is_sat")[0]
-            logger.info("Problem is %s", "SAT" if self.sat else "UNSAT")
+            # logger.info("Problem is %s", "SAT" if self.sat else "UNSAT")
 
 
 def var2cnt(node, var):

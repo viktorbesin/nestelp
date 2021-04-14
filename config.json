@@ -53,7 +53,9 @@
   "nesthdb": {
     "threshold_hybrid": 45,
     "threshold_abstract": 8,
-    "max_recursion_depth": 1,
+    "max_recursion_depth": 2,
+    "fallback_recursion_depth": 1,
+    "max_solver_time": 60,
     "sat_solver": {
       "path": "<PATH-TO-PICOSAT>/picosat-965",
       "seed_arg": "-s"

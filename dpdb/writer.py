@@ -133,10 +133,20 @@ class Writer(object):
                 #        f"{','.join([_get_symbol_for_atom(ba) for ba in r['body']])}.")
                 self.writeline(f"{','.join([_get_symbol_for_atom(ha, True) for ha in r['head']])} :- "
                        f"{','.join([_get_symbol_for_atom(ba) for ba in r['body']])}.")
+        if elp.epistemic_constraints is not None:
+            for pc in elp.epistemic_constraints['p']:
+                # str_rules.append(f":- not &k{{{_get_symbol_for_atom(abs(pc), True)}}}.")
+                self.writeline(f":- not &k{{{_get_symbol_for_atom(abs(pc), True)}}}.")
+            for nc in elp.epistemic_constraints['n']:
+                # str_rules.append(f":- not &k{{~{_get_symbol_for_atom(abs(nc), True)}}}.")
+                self.writeline(f":- not &k{{~{_get_symbol_for_atom(abs(nc), True)}}}.")
+            for uc in elp.epistemic_constraints['u']:
+                symbol = _get_symbol_for_atom(abs(uc), True)
+                # str_rules.append(f":- &k{{{symbol}}}.")
+                # str_rules.append(f":- &k{{~{symbol}}}.")
+                self.writeline(f":- &k{{{symbol}}}.")
+                self.writeline(f":- &k{{~{symbol}}}.")
 
-        for ec in elp.epistemic_constraints:
-            # str_rules.append(ec)
-            self.writeline(ec)
         # print ('\n'.join(str_rules))
         self.flush()
 

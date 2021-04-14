@@ -63,8 +63,11 @@ class ELP:
     @classmethod
     def from_file(cls, fname):
         input = ELPReader.from_file(fname)
-        return cls(input.atoms, input.rules, input.choice_rules, input.extra_atoms, input.epistemic_atoms, input.epistemic_not_atoms, [], input.var_symbol_dict)
+        return cls(input.atoms, input.rules, input.choice_rules, input.extra_atoms, input.epistemic_atoms, input.epistemic_not_atoms, ELP.empty_constraints(), input.var_symbol_dict)
 
+    @classmethod
+    def empty_constraints(cls):
+        return {'p': [], 'n': [], 'u': []}
 
 class Graph:
     def __init__(self, nodes, edges, adj_list):
@@ -120,6 +123,8 @@ class Graph:
 
 interrupted = False
 cache = {}
+pos_cache = {}
+neg_cache = {}
 
 class Problem:
     @classmethod
@@ -396,6 +401,7 @@ class ELPProblem(Problem):
         self.non_nested = elp.atoms
         self.non_nested_orig = non_nested
         self.depth = depth
+        self.fallback_depth = depth
         self.kwargs = kwargs
         self.sub_problems = set()
         self.nested_problem = None
@@ -440,10 +446,25 @@ class ELPProblem(Problem):
             fw.write_elp(self.elp)
             if interrupted:
                 return -1
-            self.active_process = psolver = subprocess.Popen(solver + [tmp], stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.DEVNULL)
-            output = solver_parser_cls.from_stream(psolver.stdout,**solver_parser["args"])
-            psolver.wait()
-            psolver.stdout.close()
+            # self.active_process = psolver = subprocess.Popen(solver + [tmp], stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.DEVNULL)
+            # output = solver_parser_cls.from_stream(psolver.stdout,**solver_parser["args"])
+            # psolver.wait()
+            # psolver.stdout.close()
+
+            self.active_process = psolver = subprocess.Popen(solver + [tmp], stdin=subprocess.DEVNULL, stdout=subprocess.PIPE, stderr=subprocess.DEVNULL)
+
+            try:
+                if self.fallback_depth < cfg["nesthdb"]["fallback_recursion_depth"]:
+                    output, _ = psolver.communicate(timeout=cfg["nesthdb"]["max_solver_time"])
+                else:
+                    output, _ = psolver.communicate()
+                psolver.stdout.close()
+                output = solver_parser_cls.from_string(output.decode(), **solver_parser["args"])
+            except subprocess.TimeoutExpired:
+                logging.warning("Solver ran into timeout: fallback")
+                self.fallback_depth = self.fallback_depth+1
+                return self.solve(fallback=True)
+
             self.active_process = None
             if interrupted:
                 return -1
@@ -466,9 +487,27 @@ class ELPProblem(Problem):
 
     def final_result(self,result):
         final = result
+        if not self.kwargs["no_cache"]:
+            frozen_rules = frozenset([hashabledict(r) for r in self.elp.rules]+[hashabledict(self.elp.epistemic_constraints)]+[hashabledict(self.elp.choice_rules)])
+            if result > 0:
+                pos_cache[frozen_rules] = final
+            else:
+                neg_cache[frozen_rules] = final
+        logger.info(f"Cache size: {len(pos_cache)} positive entries/{len(neg_cache)} negative instances")
         return final
 
     def get_cached(self):
+        frozen_rules = frozenset(
+            [hashabledict(r) for r in self.elp.rules] + [hashabledict(self.elp.epistemic_constraints)]+[hashabledict(self.elp.choice_rules)])
+        if frozen_rules in pos_cache:
+            return pos_cache[frozen_rules]
+        else:
+            if frozen_rules in neg_cache:
+                return neg_cache[frozen_rules]
+            # for negative instances a subset is sufficient
+            for key in list(neg_cache):
+                if frozenset.issubset(key, frozen_rules):
+                    return neg_cache[key]
         return None
 
     def nestedelp(self):
@@ -502,7 +541,7 @@ class ELPProblem(Problem):
         return self.nested_problem.model_count if self.count else self.nested_problem.sat
 
 
-    def solve(self):
+    def solve(self, fallback=False):
         self.preprocess()
 
         self.non_nested = self.non_nested.intersection(self.elp.epistemic_atoms)
@@ -510,20 +549,20 @@ class ELPProblem(Problem):
         if not self.kwargs["no_cache"]:
             cached = self.get_cached()
             if cached != None:
-                logger.info(f"Cache hit: {cached}")
+                logger.info(f"Cache hit - Result: {cached}")
                 return cached
 
         # no epistemic -> asp solve
-        if len(self.elp.epistemic_atoms.intersection(self.elp.atoms)) == 0 and len(self.elp.epistemic_constraints) == 0:
+        if len(self.elp.epistemic_atoms.intersection(self.elp.atoms)) == 0 and constraints_is_empty(self.elp.epistemic_constraints):
             logger.info("No epistemic atoms left")
             return self.final_result(self.call_solver("asp"))
 
-        if len(self.elp.epistemic_atoms.intersection(self.elp.atoms)) == 0 and len(self.elp.epistemic_constraints) > 0:
+        if len(self.elp.epistemic_atoms.intersection(self.elp.atoms)) == 0 and not constraints_is_empty(self.elp.epistemic_constraints):
             logger.info("No epistemic atoms left, epistemic constraints present")
-            return self.final_result(self.call_solver("elp_count")) if self.count else self.final_result(self.call_solver("elp"))
+            return self.final_result(self.solve_classic())
 
         # max recursion depth -> classic solve
-        if self.depth >= cfg["nesthdb"]["max_recursion_depth"]:
+        if self.depth >= cfg["nesthdb"]["max_recursion_depth"] and not fallback:
             logger.info("Maximal recursion depth")
             return self.final_result(self.solve_classic())
 
@@ -532,7 +571,7 @@ class ELPProblem(Problem):
         if interrupted:
             return -1
 
-        if self.depth > 0 and self.graph.tree_decomp.tree_width >= cfg["nesthdb"]["threshold_hybrid"]:
+        if self.depth > 0 and self.graph.tree_decomp.tree_width >= cfg["nesthdb"]["threshold_hybrid"] and not fallback:
             logger.info("Tree width >= hybrid threshold ({})".format(cfg["nesthdb"]["threshold_hybrid"]))
             return self.final_result(self.solve_classic())
 
