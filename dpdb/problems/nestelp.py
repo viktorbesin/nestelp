@@ -101,6 +101,8 @@ class NestElp(Problem):
         return q
 
     def filter(self, node):
+        if(self.count):
+            return " WHERE model_count > 0"
         return ""
 
     def setup_extra(self):
@@ -205,6 +207,7 @@ class NestElp(Problem):
             reduct = rules.copy()
             pn_constraint = {'head': [], 'body': []}
             undecided_constraints = []
+            epistemic_constraints = {}
 
             for i, v in enumerate(vals):
                 where.append("{} = {}".format(cols[i], v) if v != None else "{} is {}".format(cols[i], "null"))
@@ -228,9 +231,9 @@ class NestElp(Problem):
             non_nested = self.non_nested.intersection(node.all_vertices) - set(node.vertices)
 
             logger.info(
-                f"Problem {self.id}: Calling recursive for bag {node.id}: {num_vars} {len(reduct)} {len(epistemic_atoms)}")
+                f"Problem {self.id}: Calling recursive for bag {node.id}: {num_vars} {len(reduct)} {len(epistemic_atoms)} {self.depth+1}")
 
-            epistemic_constraints = get_relevant_constraints(self.epistemic_constraints, node.all_vertices)
+            epistemic_constraints = get_relevant_constraints(self.epistemic_constraints, node.all_vertices, self.extra_atoms)
             _sub_epistemic = len(epistemic_atoms) > 0 or not constraints_is_empty(epistemic_constraints)
 
             if _sub_epistemic:
@@ -261,7 +264,7 @@ class NestElp(Problem):
 
                 # use epistemic constraints to test undecided atoms
                 if len(undecided_constraints) > 0:
-                    epistemic_constraints = get_epistemic_constraints(self.epistemic_constraints, None, undecided_constraints)
+                    epistemic_constraints = get_epistemic_constraints(epistemic_constraints, None, undecided_constraints)
                     sat = sat and self.rec_func(node.all_vertices, reduct, choice_rules, self.extra_atoms,
                                         self.var_symbol_dict,
                                         non_nested, epistemic_atoms, self.epistemic_not_atoms, epistemic_constraints,

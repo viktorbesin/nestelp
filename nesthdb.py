@@ -488,7 +488,8 @@ class ELPProblem(Problem):
     def final_result(self,result):
         final = result
         if not self.kwargs["no_cache"]:
-            frozen_rules = frozenset([hashabledict(r) for r in self.elp.rules]+[hashabledict(self.elp.epistemic_constraints)]+[hashabledict(self.elp.choice_rules)])
+            rules = self.elp.rules + [self.elp.epistemic_constraints] + self.elp.choice_rules
+            frozen_rules = freeze(rules)
             if result > 0:
                 pos_cache[frozen_rules] = final
             else:
@@ -497,8 +498,9 @@ class ELPProblem(Problem):
         return final
 
     def get_cached(self):
-        frozen_rules = frozenset(
-            [hashabledict(r) for r in self.elp.rules] + [hashabledict(self.elp.epistemic_constraints)]+[hashabledict(self.elp.choice_rules)])
+        rules = self.elp.rules + [self.elp.epistemic_constraints] + self.elp.choice_rules
+        frozen_rules = freeze(rules)
+
         if frozen_rules in pos_cache:
             return pos_cache[frozen_rules]
         else:
@@ -506,7 +508,7 @@ class ELPProblem(Problem):
                 return neg_cache[frozen_rules]
             # for negative instances a subset is sufficient
             for key in list(neg_cache):
-                if frozenset.issubset(key, frozen_rules):
+                if key.issubset(frozen_rules):
                     return neg_cache[key]
         return None
 

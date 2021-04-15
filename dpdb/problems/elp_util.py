@@ -7,6 +7,13 @@ class hashabledict(dict):
     def __hash__(self):
         return hash(frozenset(self))
 
+def freeze(d):
+    if isinstance(d, dict):
+        return frozenset((key, freeze(value)) for key, value in d.items())
+    elif isinstance(d, list):
+        return frozenset(freeze(value) for value in d)
+    return d
+
 def _add_directed_edge(edges, adjacency_list, vertex1, vertex2):
     if vertex1 == vertex2:
         return
@@ -108,7 +115,7 @@ def get_subjective_reduct(rules, var_symbol_dict, extra_atoms, n, v):
 
 
 def get_epistemic_constraints(epistemic_constraints, pn_constraint, undecided_constraints):
-    ec = {'p': [], 'n': [], 'u': []}
+    ec = epistemic_constraints.copy()
     if pn_constraint is not None:
         for ba in pn_constraint['body']:
             if ba < 0:
@@ -120,16 +127,16 @@ def get_epistemic_constraints(epistemic_constraints, pn_constraint, undecided_co
 
     return ec
 
-def get_relevant_constraints(epistemic_constraints, atoms):
+def get_relevant_constraints(epistemic_constraints, atoms, extra_atoms):
     ec = {'p': [], 'n': [], 'u': []}
     for p in epistemic_constraints['p']:
-        if p in atoms:
+        if p in atoms or _get_main_atom(extra_atoms, p) in atoms:
             ec['p'].append(p)
     for n in epistemic_constraints['n']:
-        if n in atoms:
+        if n in atoms or _get_main_atom(extra_atoms, n) in atoms:
             ec['n'].append(n)
     for u in epistemic_constraints['u']:
-        if u in atoms:
+        if u in atoms or _get_main_atom(extra_atoms, u) in atoms:
             ec['u'].append(u)
     return ec
 
