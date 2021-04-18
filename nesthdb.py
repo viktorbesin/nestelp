@@ -479,10 +479,15 @@ class ELPProblem(Problem):
                 return -1
 
             result = getattr(output, solver_parser["result"])
-            if not isinstance(result, int):
-                result = True if result == "SATISFIABLE" else False
+
             if self.count:
-                result = int(result) if result else 0
+                try:
+                    result = int(result) if result else 0
+                except ValueError:
+                    result = 1 if result == "SATISFIABLE" else 0
+            else:
+                result = True if result == "SATISFIABLE" else False
+
 
         logger.info(f"Solver {type} result: {result}")
         return result
