@@ -238,7 +238,7 @@ class NestElp(Problem):
 
             if _sub_epistemic:
                 epistemic_constraints = get_epistemic_constraints(epistemic_constraints, pn_constraint, undecided_constraints)
-                sat = self.rec_func(node.all_vertices, rules, choice_rules, self.extra_atoms,
+                sat = self.rec_func(node.all_vertices, reduct, choice_rules, self.extra_atoms,
                                     self.var_symbol_dict,
                                     non_nested, epistemic_atoms, self.epistemic_not_atoms, epistemic_constraints, self.depth + 1,
                                     **self.kwargs)
@@ -333,7 +333,12 @@ args.nested[NestElp] = dict(
             action="store_true",
             dest="count_solutions",
             help="Count the solutions for the problem"
+        ),
+        "--input-format": dict(
+            dest="input_format",
+            help="Input format: &k{} elp format, 3qbf qdimacs",
+            choices=["lp", "qdimacs"],
+            default="lp"
         )
     }
-
 )

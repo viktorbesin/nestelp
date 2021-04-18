@@ -1,0 +1,208 @@
+u :- na1, na3, na4, naux0.
+u :- a1, a3, a4, naux1.
+u :- na3, na5, na6, naux2.
+u :- a3, a5, a6, naux3.
+u :- na5, na7, na8, naux4.
+u :- a5, a7, a8, naux5.
+u :- na7, na9, na10, naux6.
+u :- a7, a9, a10, naux7.
+u :- na9, na11, na12, naux8.
+u :- a9, a11, a12, naux9.
+u :- na11, na13, na14, naux10.
+u :- a11, a13, a14, naux11.
+u :- na13, na15, na16, naux12.
+u :- a13, a15, a16, naux13.
+u :- na15, na17, na18, naux14.
+u :- a15, a17, a18, naux15.
+u :- na17, na19, na20, naux16.
+u :- a17, a19, a20, naux17.
+u :- na19, na21, na22, naux18.
+u :- a19, a21, a22, naux19.
+u :- na21, na23, na24, naux20.
+u :- a21, a23, a24, naux21.
+u :- na23, na25, na26, naux22.
+u :- a23, a25, a26, naux23.
+u :- na25, na27, na28, naux24.
+u :- a25, a27, a28, naux25.
+u :- na27, na29, na30, naux26.
+u :- a27, a29, a30, naux27.
+u :- na29, na31, na32, naux28.
+u :- a29, a31, a32, naux29.
+u :- na31, na33, na34, naux30.
+u :- a31, a33, a34, naux31.
+u :- na33, na35, na36, naux32.
+u :- a33, a35, a36, naux33.
+u :- na35, na37, na38, naux34.
+u :- a35, a37, a38, naux35.
+u :- na37, na39, na40, naux36.
+u :- a37, a39, a40, naux37.
+a1 :- not &k{na1}.
+na1 :- not &k{a1}.
+a2 :- not &k{na2}.
+na2 :- not &k{a2}.
+a7 :- not &k{na7}.
+na7 :- not &k{a7}.
+a8 :- not &k{na8}.
+na8 :- not &k{a8}.
+a13 :- not &k{na13}.
+na13 :- not &k{a13}.
+a14 :- not &k{na14}.
+na14 :- not &k{a14}.
+a19 :- not &k{na19}.
+na19 :- not &k{a19}.
+a20 :- not &k{na20}.
+na20 :- not &k{a20}.
+a25 :- not &k{na25}.
+na25 :- not &k{a25}.
+a26 :- not &k{na26}.
+na26 :- not &k{a26}.
+a31 :- not &k{na31}.
+na31 :- not &k{a31}.
+a32 :- not &k{na32}.
+na32 :- not &k{a32}.
+a37 :- not &k{na37}.
+na37 :- not &k{a37}.
+a38 :- not &k{na38}.
+na38 :- not &k{a38}.
+a3 :- not na3.
+na3 :- not a3.
+a5 :- not na5.
+na5 :- not a5.
+a9 :- not na9.
+na9 :- not a9.
+a11 :- not na11.
+na11 :- not a11.
+a15 :- not na15.
+na15 :- not a15.
+a17 :- not na17.
+na17 :- not a17.
+a21 :- not na21.
+na21 :- not a21.
+a23 :- not na23.
+na23 :- not a23.
+a27 :- not na27.
+na27 :- not a27.
+a29 :- not na29.
+na29 :- not a29.
+a33 :- not na33.
+na33 :- not a33.
+a35 :- not na35.
+na35 :- not a35.
+a39 :- not na39.
+na39 :- not a39.
+aux0 :- not naux0.
+naux0 :- not aux0.
+aux1 :- not naux1.
+naux1 :- not aux1.
+aux2 :- not naux2.
+naux2 :- not aux2.
+aux3 :- not naux3.
+naux3 :- not aux3.
+aux4 :- not naux4.
+naux4 :- not aux4.
+aux5 :- not naux5.
+naux5 :- not aux5.
+aux6 :- not naux6.
+naux6 :- not aux6.
+aux7 :- not naux7.
+naux7 :- not aux7.
+aux8 :- not naux8.
+naux8 :- not aux8.
+aux9 :- not naux9.
+naux9 :- not aux9.
+aux10 :- not naux10.
+naux10 :- not aux10.
+aux11 :- not naux11.
+naux11 :- not aux11.
+aux12 :- not naux12.
+naux12 :- not aux12.
+aux13 :- not naux13.
+naux13 :- not aux13.
+aux14 :- not naux14.
+naux14 :- not aux14.
+aux15 :- not naux15.
+naux15 :- not aux15.
+aux16 :- not naux16.
+naux16 :- not aux16.
+aux17 :- not naux17.
+naux17 :- not aux17.
+aux18 :- not naux18.
+naux18 :- not aux18.
+aux19 :- not naux19.
+naux19 :- not aux19.
+aux20 :- not naux20.
+naux20 :- not aux20.
+aux21 :- not naux21.
+naux21 :- not aux21.
+aux22 :- not naux22.
+naux22 :- not aux22.
+aux23 :- not naux23.
+naux23 :- not aux23.
+aux24 :- not naux24.
+naux24 :- not aux24.
+aux25 :- not naux25.
+naux25 :- not aux25.
+aux26 :- not naux26.
+naux26 :- not aux26.
+aux27 :- not naux27.
+naux27 :- not aux27.
+aux28 :- not naux28.
+naux28 :- not aux28.
+aux29 :- not naux29.
+naux29 :- not aux29.
+aux30 :- not naux30.
+naux30 :- not aux30.
+aux31 :- not naux31.
+naux31 :- not aux31.
+aux32 :- not naux32.
+naux32 :- not aux32.
+aux33 :- not naux33.
+naux33 :- not aux33.
+aux34 :- not naux34.
+naux34 :- not aux34.
+aux35 :- not naux35.
+naux35 :- not aux35.
+aux36 :- not naux36.
+naux36 :- not aux36.
+aux37 :- not naux37.
+naux37 :- not aux37.
+a4, na4.
+a4 :- u.
+na4 :- u.
+a6, na6.
+a6 :- u.
+na6 :- u.
+a10, na10.
+a10 :- u.
+na10 :- u.
+a12, na12.
+a12 :- u.
+na12 :- u.
+a16, na16.
+a16 :- u.
+na16 :- u.
+a18, na18.
+a18 :- u.
+na18 :- u.
+a22, na22.
+a22 :- u.
+na22 :- u.
+a24, na24.
+a24 :- u.
+na24 :- u.
+a28, na28.
+a28 :- u.
+na28 :- u.
+a30, na30.
+a30 :- u.
+na30 :- u.
+a34, na34.
+a34 :- u.
+na34 :- u.
+a36, na36.
+a36 :- u.
+na36 :- u.
+a40, na40.
+a40 :- u.
+na40 :- u.
+v :- not &k{v}, not &k{~u}.

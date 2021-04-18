@@ -62,7 +62,16 @@ class ELP:
 
     @classmethod
     def from_file(cls, fname):
-        input = ELPReader.from_file(fname)
+        if args.input_format == 'qdimacs':
+            assert ('3qbf_parser' in cfg['nesthdb'])
+            assert ('path' in cfg['nesthdb']['3qbf_parser'])
+            parser = cfg['nesthdb']['3qbf_parser']['path']
+            logging.info(f"Parsing 3QBF file using {parser}")
+            with open(fname, mode='rb') as file_object:
+                pparser = subprocess.Popen(["tools/3qbf2eclingo.py"], stdin=file_object, stdout=subprocess.PIPE, stderr=subprocess.DEVNULL)
+            input = ELPReader.from_stream(pparser.stdout)
+        else:
+            input = ELPReader.from_file(fname)
         return cls(input.atoms, input.rules, input.choice_rules, input.extra_atoms, input.epistemic_atoms, input.epistemic_not_atoms, ELP.empty_constraints(), input.var_symbol_dict)
 
     @classmethod
@@ -494,7 +503,7 @@ class ELPProblem(Problem):
                 pos_cache[frozen_rules] = final
             else:
                 neg_cache[frozen_rules] = final
-        logger.info(f"Cache size: {len(pos_cache)} positive entries/{len(neg_cache)} negative instances")
+            logger.info(f"Cache size: {len(pos_cache)} positive entries/{len(neg_cache)} negative entries")
         return final
 
     def get_cached(self):
@@ -623,7 +632,7 @@ CLASS_MAP = {NestElp: ELPProblem.prepare_instance,
                     NestPmc: Problem.prepare_instance}
 
 def main():
-    global cfg
+    global cfg, args
     arg_parser = setup_arg_parser("%(prog)s [general options] -f input-file")
     arg_parser.add_argument("--no-cache", dest="no_cache", help="Disable cache", action="store_true")
     args = parse_args(arg_parser)

@@ -140,6 +140,9 @@
         },
         "result": "result"
       }
+    },
+    "3qbf_parser": {
+      "path": "tools/3qbf2eclingo.py"
     }
   }
 }
