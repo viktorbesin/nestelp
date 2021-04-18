@@ -68,7 +68,7 @@ class ELP:
             parser = cfg['nesthdb']['3qbf_parser']['path']
             logging.info(f"Parsing 3QBF file using {parser}")
             with open(fname, mode='rb') as file_object:
-                pparser = subprocess.Popen(["tools/3qbf2eclingo.py"], stdin=file_object, stdout=subprocess.PIPE, stderr=subprocess.DEVNULL)
+                pparser = subprocess.Popen(parser, stdin=file_object, stdout=subprocess.PIPE, stderr=subprocess.DEVNULL)
             input = ELPReader.from_stream(pparser.stdout)
         else:
             input = ELPReader.from_file(fname)
@@ -479,11 +479,10 @@ class ELPProblem(Problem):
                 return -1
 
             result = getattr(output, solver_parser["result"])
+            if not isinstance(result, int):
+                result = True if result == "SATISFIABLE" else False
             if self.count:
                 result = int(result) if result else 0
-            else:
-                result = True if result == "SATISFIABLE" else False
-
 
         logger.info(f"Solver {type} result: {result}")
         return result
