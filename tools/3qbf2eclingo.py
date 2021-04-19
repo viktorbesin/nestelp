@@ -53,7 +53,7 @@ qdimacsParser = Lark(r'''
   num: pnum     -> posnum
      | "-" pnum -> negnum
 
-  COMMENT_LINE: "c" WS_INLINE /[^\n]/* NEWLINE
+  COMMENT_LINE: "c" NEWLINE | "c" WS_INLINE NEWLINE | "c" WS_INLINE /[^\n]/* NEWLINE
       
   %import common.INT
   %import common.WS_INLINE

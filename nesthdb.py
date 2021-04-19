@@ -69,7 +69,11 @@ class ELP:
             logging.info(f"Parsing 3QBF file using {parser}")
             with open(fname, mode='rb') as file_object:
                 pparser = subprocess.Popen(parser, stdin=file_object, stdout=subprocess.PIPE, stderr=subprocess.DEVNULL)
-            input = ELPReader.from_stream(pparser.stdout)
+                input = ELPReader.from_stream(pparser.stdout)
+                pparser.communicate()
+                if (pparser.returncode != 0):
+                    logger.error("Error while parsing .qdimacs file!")
+                    sys.exit(1)
         else:
             input = ELPReader.from_file(fname)
         return cls(input.atoms, input.rules, input.choice_rules, input.extra_atoms, input.epistemic_atoms, input.epistemic_not_atoms, ELP.empty_constraints(), input.var_symbol_dict)
