@@ -207,6 +207,8 @@ class NestElp(Problem):
             reduct = rules.copy()
             pn_constraint = {'head': [], 'body': []}
             undecided_constraints = []
+            pn_constraint_a = {'head': [], 'body': []}
+            undecided_constraints_a = []
             epistemic_constraints = {}
 
             for i, v in enumerate(vals):
@@ -216,16 +218,19 @@ class NestElp(Problem):
                 reduct = get_subjective_reduct(reduct, self.var_symbol_dict, self.extra_atoms, n, v)
                 if v != None:
                     # use the opposite and check for empty set
-                    # TODO: check if still epistemic and build epistemic constraint (?)
                     if v:
-                        pn_constraint['body'].append(n)
-                        # constraints.append({'head': [], 'body': [(-1) * n]})
+                        if node.needs_introduce(n):
+                            pn_constraint['body'].append(n)
+                        pn_constraint_a['body'].append(n)
                     else:
-                        pn_constraint['body'].append((-1) * n)
-                        # constraints.append({'head': [], 'body': [(-1) * n]})
+                        if node.needs_introduce(n):
+                            pn_constraint['body'].append((-1) * n)
+                        pn_constraint_a['body'].append((-1) * n)
                 else:
                     # undecided
-                    undecided_constraints.append(({'head': [], 'body': [n]}, {'head': [], 'body': [(-1) * n]}))
+                    if node.needs_introduce(n):
+                        undecided_constraints.append(({'head': [], 'body': [n]}, {'head': [], 'body': [(-1) * n]}))
+                    undecided_constraints_a.append(({'head': [], 'body': [n]}, {'head': [], 'body': [(-1) * n]}))
 
             epistemic_atoms = self.epistemic_atoms.intersection(node.all_vertices) - set(node.vertices)
             non_nested = self.non_nested.intersection(node.all_vertices) - set(node.vertices)
@@ -237,7 +242,7 @@ class NestElp(Problem):
             _sub_epistemic = len(epistemic_atoms) > 0 or not constraints_is_empty(epistemic_constraints)
 
             if _sub_epistemic:
-                epistemic_constraints = get_epistemic_constraints(epistemic_constraints, pn_constraint, undecided_constraints)
+                epistemic_constraints = get_epistemic_constraints(epistemic_constraints, pn_constraint_a, undecided_constraints_a)
                 sat = self.rec_func(node.all_vertices, reduct, choice_rules, self.extra_atoms,
                                     self.var_symbol_dict,
                                     non_nested, epistemic_atoms, self.epistemic_not_atoms, epistemic_constraints, self.depth + 1,
