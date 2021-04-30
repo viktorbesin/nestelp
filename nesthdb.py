@@ -25,7 +25,7 @@ from dpdb.problems.nestpmc import NestPmc
 from dpdb.problems.nestelp import NestElp
 from dpdb.problems.sat_util import *
 from dpdb.problems.elp_util import *
-from dpdb.reader import CnfReader, ELPReader
+from dpdb.reader import CnfReader, ELPReader, QuantitiveSelectionReader
 from dpdb.writer import FileWriter, StreamWriter, denormalize_cnf, normalize_cnf
 
 logger = logging.getLogger("nestHDB")
@@ -48,15 +48,15 @@ class Formula:
         return cls(input.vars, input.clauses, input.projected)
 
 class ELP:
-    def __init__(self, atoms, rules, choice_rules, extra_atoms, epistemic_atoms, epistemic_not_atoms, epistemic_constraints, var_symbol_dict):
+    def __init__(self, atoms, rules, choice_rules, extra_atoms, epistemic_atoms, qr_atoms, epistemic_constraints, var_symbol_dict):
         self.atoms = atoms
         self.rules = rules
         self.choice_rules = choice_rules
         self.epistemic_atoms = epistemic_atoms
-        self.epistemic_not_atoms = epistemic_not_atoms
         self.var_symbol_dict = var_symbol_dict
         self.extra_atoms = extra_atoms
         self.epistemic_constraints = epistemic_constraints
+        self.qr_atoms = qr_atoms
 
         self.var_rule_dict = defaultdict(set)
 
@@ -76,7 +76,7 @@ class ELP:
                     sys.exit(1)
         else:
             input = ELPReader.from_file(fname)
-        return cls(input.atoms, input.rules, input.choice_rules, input.extra_atoms, input.epistemic_atoms, input.epistemic_not_atoms, ELP.empty_constraints(), input.var_symbol_dict)
+        return cls(input.atoms, input.rules, input.choice_rules, input.extra_atoms, input.epistemic_atoms, set(), ELP.empty_constraints(), input.var_symbol_dict)
 
     @classmethod
     def empty_constraints(cls):
@@ -407,6 +407,11 @@ class ELPProblem(Problem):
     @classmethod
     def prepare_instance(cls, fname, args):
         elp = ELP.from_file(fname)
+        if args.qr:
+            # use comma-seperator reader and set the atoms in elp
+            qsr = QuantitiveSelectionReader(elp)
+            qsr.from_file(args.qr.name)
+            elp = qsr.elp
         return cls(elp,elp.epistemic_atoms,**vars(args))
 
     def __init__(self, elp, non_nested, depth=0, **kwargs):
@@ -420,6 +425,7 @@ class ELPProblem(Problem):
         self.nested_problem = None
         self.active_process = None
         self.count = kwargs.get('count_solutions')
+        self.qr = kwargs.get('qr')
 
     def preprocess(self):
         return
@@ -484,7 +490,7 @@ class ELPProblem(Problem):
 
             result = getattr(output, solver_parser["result"])
 
-            if self.count:
+            if self.count or self.qr:
                 try:
                     result = int(result) if result else 0
                 except ValueError:
@@ -500,7 +506,7 @@ class ELPProblem(Problem):
         if interrupted:
             return -1
 
-        return self.call_solver("elp_count") if self.count else self.call_solver("elp")
+        return self.call_solver("elp_count") if (self.count or self.qr) else self.call_solver("elp")
 
     def final_result(self,result):
         final = result
@@ -557,7 +563,12 @@ class ELPProblem(Problem):
         self.nested_problem.solve()
         if interrupted:
             return -1
-        return self.nested_problem.model_count if self.count else self.nested_problem.sat
+        if self.count:
+            return self.nested_problem.model_count
+        elif self.qr:
+            return (self.nested_problem.projected_count/self.nested_problem.model_count)
+        else:
+            self.nested_problem.sat
 
 
     def solve(self, fallback=False):
@@ -605,10 +616,10 @@ class ELPProblem(Problem):
 
         return self.final_result(self.nestedelp())
 
-    def solve_rec(self, atoms, rules, choice_rules, extra_atoms, var_symbol_dict, non_nested, epistemic_atoms, epistemic_not_atoms, epistemic_constraints, depth=0, **kwargs):
+    def solve_rec(self, atoms, rules, choice_rules, extra_atoms, var_symbol_dict, non_nested, epistemic_atoms, qr_atoms, epistemic_constraints, depth=0, **kwargs):
         if interrupted:
             return -1
-        p = ELPProblem(ELP(atoms, rules, choice_rules, extra_atoms, epistemic_atoms, epistemic_not_atoms, epistemic_constraints, var_symbol_dict), non_nested, depth, **kwargs)
+        p = ELPProblem(ELP(atoms, rules, choice_rules, extra_atoms, epistemic_atoms, qr_atoms, epistemic_constraints, var_symbol_dict), non_nested, depth, **kwargs)
 
         self.sub_problems.add(p)
         result = p.solve()
@@ -629,6 +640,8 @@ class ELPProblem(Problem):
     def output_result(self, result):
         if self.count:
             return f"Problem has {result} world view(s)"
+        if self.qr:
+            return f"The probability of the selected combination is {result*100}%."
         else:
             return f"ELP: {'SATISFIABLE' if result else 'UNSATISFIABLE'}"
 

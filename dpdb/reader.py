@@ -397,6 +397,56 @@ class EdgeReader(DimacsReader):
                            self.num_edges)
 
 
+class QuantitiveSelectionReader():
+    def __init__(self, elp, silent=False):
+        self.elp = elp
+        self.qr_atoms = set()
+
+    def from_file(self, fname, **kwargs):
+        with open(fname, "r") as f:
+            self.from_string(f.read(), **kwargs)
+
+    def from_stream(self, stream, **kwargs):
+        self.from_string(stream.read.decode(), **kwargs)
+
+    def from_string(self, string, **kwargs):
+        self.parse(string)
+
+    def parse(self, string):
+        for symbol in string.split():
+            _factor = 1
+            if symbol.startswith('-'):
+                symbol = symbol[1:]
+                _factor = -1
+            print (symbol)
+            atom = None
+            # get atom-nr by symbol
+            print (self.elp.var_symbol_dict)
+            for a, s in self.elp.var_symbol_dict.items():
+                if s == symbol:
+                    atom = a
+
+            # check for aux atoms
+            # check if found
+            if (atom is None):
+                for a, s in self.elp.var_symbol_dict.items():
+                    if s == f"aux_{symbol}" or\
+                            s == f"aux_not_{symbol}" or\
+                            s == f"aux_sn_{symbol}" or\
+                            s == f"aux_not_sn_{symbol}":
+                        atom = a
+                if (atom is None):
+                    logger.error(f"Atom {symbol} not found in ELP")
+                    sys.exit(1)
+            # check if in epistemic list
+            if (atom not in self.elp.epistemic_atoms):
+                logger.error(f"Atom {symbol} is not epistemic")
+                sys.exit(1)
+
+            # add to qr_atoms
+            self.elp.qr_atoms.add(atom*_factor)
+
+
 class ELPReader(Reader):
     def __init__(self):
         self.atoms = set()

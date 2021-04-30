@@ -1,6 +1,7 @@
 # -*- coding: future_fstrings -*-
 import logging
 import subprocess
+import argparse
 from collections import defaultdict
 from concurrent.futures import ThreadPoolExecutor, as_completed
 
@@ -48,6 +49,7 @@ class NestElp(Problem):
         self.store_all_vertices = True
         self.inner_vars_threshold = inner_vars_threshold
         self.count = kwargs.get('count_solutions')
+        self.qr = True if kwargs.get('qr') else False
 
     def td_node_column_def(self, var):
         return (var2col(var), "BOOLEAN")
@@ -58,6 +60,8 @@ class NestElp(Problem):
     def td_node_extra_columns(self):
         if self.count:
             return [("model_count", "NUMERIC")]
+        if self.qr:
+            return [("model_count", "NUMERIC"), ("projected_count", "NUMERIC")]
         return []
 
     def candidate_extra_cols(self, node):
@@ -66,11 +70,21 @@ class NestElp(Problem):
                 " * ".join(set([var2cnt(node, v) for v in node.vertices] +
                                [node2cnt(n) for n in node.children])) if node.children else "1"
             )]
+        if self.qr:
+            return ["{}::numeric AS model_count".format(
+                " * ".join(set([var2cnt(node, v) for v in node.vertices] +
+                               [node2cnt(n) for n in node.children])) if node.children else "1"
+            )] + ["{}::numeric AS projected_count".format(
+                " * ".join(set([var2pc(node, v) for v in node.vertices] +
+                               [node2pc(n) for n in node.children])) if node.children else "1"
+            )]
         return []
 
     def assignment_extra_cols(self, node):
         if self.count:
             return ["sum(model_count)::numeric AS model_count"]
+        if self.qr:
+            return ["sum(model_count)::numeric AS model_count", "sum(projected_count)::numeric AS projected_count"]
         return []
 
     def candidates_select(self, node):
@@ -101,7 +115,7 @@ class NestElp(Problem):
         return q
 
     def filter(self, node):
-        if(self.count):
+        if self.count or self.qr:
             return " WHERE model_count > 0"
         return ""
 
@@ -114,6 +128,14 @@ class NestElp(Problem):
                     ("num_vars", "INTEGER NOT NULL"),
                     ("num_rules", "INTEGER NOT NULL"),
                     ("model_count", "NUMERIC")
+                ])
+            elif self.qr:
+                self.db.create_table("problem_elp_qr", [
+                    ("id", "INTEGER NOT NULL PRIMARY KEY REFERENCES PROBLEM(id)"),
+                    ("num_vars", "INTEGER NOT NULL"),
+                    ("num_rules", "INTEGER NOT NULL"),
+                    ("model_count", "NUMERIC"),
+                    ("projected_count", "NUMERIC")
                 ])
             else:
                 self.db.create_table("problem_elp", [
@@ -134,6 +156,9 @@ class NestElp(Problem):
             self.db.ignore_next_praefix()
             if self.count:
                 self.db.insert("problem_elp_count", ("id", "num_vars", "num_rules"),
+                               (self.id, self.num_vars, self.num_rules))
+            elif self.qr:
+                self.db.insert("problem_elp_qr", ("id", "num_vars", "num_rules"),
                                (self.id, self.num_vars, self.num_rules))
             else:
                 self.db.insert("problem_elp", ("id", "num_vars", "num_rules"),
@@ -171,7 +196,7 @@ class NestElp(Problem):
         self.num_vars = num_vars
         self.num_rules = num_rules
         self.epistemic_atoms = elp.epistemic_atoms
-        self.epistemic_not_atoms = elp.epistemic_not_atoms
+        self.qr_atoms = elp.qr_atoms
         self.non_nested = non_nested
         self.var_rule_dict = elp.var_rule_dict
         self.var_symbol_dict = elp.var_symbol_dict
@@ -210,6 +235,7 @@ class NestElp(Problem):
             pn_constraint_a = {'head': [], 'body': []}
             undecided_constraints_a = []
             epistemic_constraints = {}
+            _factor = 1
 
             for i, v in enumerate(vals):
                 where.append("{} = {}".format(cols[i], v) if v != None else "{} is {}".format(cols[i], "null"))
@@ -217,15 +243,20 @@ class NestElp(Problem):
                 # build reduct
                 reduct = get_subjective_reduct(reduct, self.var_symbol_dict, self.extra_atoms, n, v)
                 if v != None:
+                    # for atoms saved negative, flip the value
+                    _factor = 1
+                    if (self.var_symbol_dict[n].startswith("aux_sn") or
+                            self.var_symbol_dict[n].startswith("aux_not_sn")):
+                        _factor = -1
                     # use the opposite and check for empty set
                     if v:
                         if node.needs_introduce(n):
-                            pn_constraint['body'].append(n)
-                        pn_constraint_a['body'].append(n)
+                            pn_constraint['body'].append(n*_factor)
+                        pn_constraint_a['body'].append(n*_factor)
                     else:
                         if node.needs_introduce(n):
-                            pn_constraint['body'].append((-1) * n)
-                        pn_constraint_a['body'].append((-1) * n)
+                            pn_constraint['body'].append((-1) * n*_factor)
+                        pn_constraint_a['body'].append((-1) * n*_factor)
                 else:
                     # undecided
                     if node.needs_introduce(n):
@@ -241,12 +272,47 @@ class NestElp(Problem):
             epistemic_constraints = get_relevant_constraints(self.epistemic_constraints, node.all_vertices, self.extra_atoms)
             _sub_epistemic = len(epistemic_atoms) > 0 or not constraints_is_empty(epistemic_constraints)
 
+            if self.qr:
+                qr_atoms = set([a for a in self.qr_atoms if abs(a) in node.all_vertices])
+
+            #write_current_elp(reduct, choice_rules, epistemic_atoms, epistemic_constraints, self.var_symbol_dict)
+
             if _sub_epistemic:
                 epistemic_constraints = get_epistemic_constraints(epistemic_constraints, pn_constraint_a, undecided_constraints_a)
                 sat = self.rec_func(node.all_vertices, reduct, choice_rules, self.extra_atoms,
                                     self.var_symbol_dict,
-                                    non_nested, epistemic_atoms, self.epistemic_not_atoms, epistemic_constraints, self.depth + 1,
+                                    non_nested, epistemic_atoms, self.qr_atoms, epistemic_constraints, self.depth + 1,
                                     **self.kwargs)
+
+                qrsat = sat
+                if self.qr and sat > 0:
+                    not_covered = qr_atoms.copy()
+                    for a in qr_atoms:
+                        if a in node.vertices:
+                            not_covered.remove(a)
+                            qrsat = qrsat if ((a*_factor) in pn_constraint_a['body']) else 0
+                        if qrsat == 0:
+                            break
+                    # optimize inner epistemic call: only one call with all projected epistemics atoms left
+                    if qrsat > 0:
+                        if len(not_covered) > 0:
+                            pnc = pn_constraint_a.copy()
+                            for a in not_covered:
+                                _factor = 1
+                                if (self.var_symbol_dict[n].startswith("aux_sn") or
+                                        self.var_symbol_dict[n].startswith("aux_not_sn")):
+                                    _factor = -1
+                                pnc['body'].append(_factor*a)
+                            epistemic_constraints = get_relevant_constraints(self.epistemic_constraints,
+                                                                             node.all_vertices, self.extra_atoms)
+                            epistemic_constraints = get_epistemic_constraints(epistemic_constraints, pnc,
+                                                                              undecided_constraints_a)
+                            qrsat = self.rec_func(node.all_vertices, reduct, choice_rules, self.extra_atoms,
+                                                self.var_symbol_dict,
+                                                non_nested, epistemic_atoms, self.qr_atoms, epistemic_constraints,
+                                                self.depth + 1,
+                                                **self.kwargs)
+
 
             else:
                 kwargs_sat = self.kwargs.copy()
@@ -257,7 +323,7 @@ class NestElp(Problem):
                 # idea: remove this call if there is a least one undecided literal
                 sat = self.rec_func(node.all_vertices, reduct, choice_rules, self.extra_atoms,
                                     self.var_symbol_dict,
-                                    non_nested, epistemic_atoms, self.epistemic_not_atoms, epistemic_constraints, self.depth+1, **kwargs_sat)
+                                    non_nested, epistemic_atoms, self.qr_atoms, epistemic_constraints, self.depth+1, **kwargs_sat)
 
                 # check for empty set -> cf. AAAI Listing 1 Line 4.1
                 # only if there are positive/negative values (and therefore constraints)
@@ -265,14 +331,14 @@ class NestElp(Problem):
                     sat = sat and not (
                         self.rec_func(node.all_vertices, reduct + [pn_constraint], choice_rules, self.extra_atoms,
                                       self.var_symbol_dict,
-                                      non_nested, epistemic_atoms, self.epistemic_not_atoms, epistemic_constraints, self.depth+1, **kwargs_sat))
+                                      non_nested, epistemic_atoms, self.qr_atoms, epistemic_constraints, self.depth+1, **kwargs_sat))
 
                 # use epistemic constraints to test undecided atoms
                 if len(undecided_constraints) > 0:
                     epistemic_constraints = get_epistemic_constraints(epistemic_constraints, None, undecided_constraints)
                     sat = sat and self.rec_func(node.all_vertices, reduct, choice_rules, self.extra_atoms,
                                         self.var_symbol_dict,
-                                        non_nested, epistemic_atoms, self.epistemic_not_atoms, epistemic_constraints,
+                                        non_nested, epistemic_atoms, self.qr_atoms, epistemic_constraints,
                                         self.depth + 1,
                                         **kwargs_sat)
 
@@ -289,10 +355,20 @@ class NestElp(Problem):
 
                 if self.count:
                     sat = 1 if sat else 0
+                if self.qr:
+                    sat = qrsat = 1 if sat else 0
+                    for a in qr_atoms:
+                        qrsat = qrsat * ((a*_factor) in pn_constraint['body'])
+                        if qrsat == 0:
+                            break
 
             if not self.interrupted:
                 if self.count:
                     db.update(f"td_node_{node.id}", ["model_count"], ["model_count * {}::numeric".format(sat)], where)
+                    db.commit()
+                elif self.qr:
+                    db.update(f"td_node_{node.id}", ["model_count", "projected_count"],
+                              ["model_count * {}::numeric".format(sat), "projected_count * {}::numeric".format(qrsat)], where)
                     db.commit()
                 else:
                     if not sat:
@@ -310,6 +386,17 @@ class NestElp(Problem):
             self.db.ignore_next_praefix()
             self.model_count = self.db.update("problem_elp_count", ["model_count"], [sum_count], [f"ID = {self.id}"], "model_count")[0]
             # logger.info("Problem has %d world view(s)", self.model_count)
+        elif self.qr:
+            sum_count = self.db.replace_dynamic_tabs(f"(select coalesce(sum(model_count),0) from {root_tab})")
+            projected_count = self.db.replace_dynamic_tabs(f"(select coalesce(sum(projected_count),0) from {root_tab})")
+            self.db.ignore_next_praefix()
+            self.model_count = self.db.update("problem_elp_qr", ["model_count"], [sum_count], [f"ID = {self.id}"], "model_count")[0]
+            self.db.ignore_next_praefix()
+            self.projected_count = \
+            self.db.update("problem_elp_qr", ["projected_count"], [projected_count],
+                           [f"ID = {self.id}"], "projected_count")[0]
+            logger.info("Problem has %d world view(s)", self.model_count)
+            logger.info("Problem has %d selected world view(s)", self.projected_count)
         else:
             is_sat = self.db.replace_dynamic_tabs(f"(select exists(select 1 from {root_tab}))")
             self.db.ignore_next_praefix()
@@ -327,6 +414,16 @@ def var2cnt(node, var):
 def node2cnt(node):
     return "{}.model_count".format(node2tab_alias(node))
 
+def var2pc(node, var):
+    if node.needs_introduce(var):
+        return "1"
+    else:
+        return "{}.projected_count".format(var2tab_alias(node, var))
+
+
+def node2pc(node):
+    return "{}.projected_count".format(node2tab_alias(node))
+
 
 args.specific[NestElp] = dict(
 )
@@ -334,11 +431,19 @@ args.specific[NestElp] = dict(
 args.nested[NestElp] = dict(
     help="Solve nested ELP instances",
     options={
-        "--count": dict(
-            action="store_true",
-            dest="count_solutions",
-            help="Count the solutions for the problem"
-        ),
+        "group1": {
+            "--count": dict(
+                        action="store_true",
+                        dest="count_solutions",
+                        help="Count the solutions for the problem"
+                    ),
+            "--qr": dict(
+                        type=argparse.FileType('r'),
+                        dest="qr",
+                        metavar='FILE',
+                        help="Given a space-seperated input of epistemic atoms, perform quantified reasoning over the world views."
+            )
+        },
         "--input-format": dict(
             dest="input_format",
             help="Input format: &k{} elp format, 3qbf qdimacs",

@@ -117,7 +117,13 @@ def setup_arg_parser(usage):
         p.set_defaults(cls=cls)
         prob_args["options"] = options
         for arg, kwargs in options.items():
-            p.add_argument(arg,**kwargs)
+            if arg.startswith("group"):
+                group = p.add_mutually_exclusive_group(required=False)
+                xor_options = options[arg]
+                for xor_arg, xor_kwargs in xor_options.items():
+                    group.add_argument(xor_arg,**xor_kwargs)
+            else:
+                p.add_argument(arg,**kwargs)
 
     return parser
 
