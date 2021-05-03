@@ -566,6 +566,8 @@ class ELPProblem(Problem):
         if self.count:
             return self.nested_problem.model_count
         elif self.qr:
+            if (self.nested_problem.model_count == 0):
+                return 0
             return (self.nested_problem.projected_count/self.nested_problem.model_count)
         else:
             self.nested_problem.sat
