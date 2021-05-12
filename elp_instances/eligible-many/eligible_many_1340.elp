@@ -1,0 +1,2686 @@
+eligible(X) :- highGPA(X), student(X).
+eligible(X) :- minority(X), fairGPA(X), student(X).
+-eligible(X) :- -fairGPA(X), -highGPA(X), student(X).
+interview(X) :- not &k{ eligible(X) }, not &k{ -eligible(X) }, student(X).
+lowChance(X) :- not &k{highChance(X)}, not &k{eligible(X)}, student(X).
+highChance(X) :- not &k{lowChance(X)}, not &k{eligible(X)}, student(X).
+highGPA(s1), fairGPA(s1).
+highGPA(s2), fairGPA(s2). minority(s2).
+highGPA(s3).
+fairGPA(s4). minority(s4).
+fairGPA(s5).
+minority(s6), highGPA(s6).
+fairGPA(s7), highGPA(s7). minority(s7).
+highGPA(s8).
+-highGPA(s9). -fairGPA(s9), minority(s9).
+-highGPA(s10). -fairGPA(s10). minority(s10).
+fairGPA(s11), highGPA(s11). minority(s11).
+fairGPA(s12). minority(s12).
+highGPA(s13).
+fairGPA(s14). -minority(s14).
+minority(s15).
+-highGPA(s16). fairGPA(s16), -fairGPA(s16). minority(s16).
+fairGPA(s17), highGPA(s17).
+highGPA(s18).
+-highGPA(s19). fairGPA(s19), -fairGPA(s19). minority(s19).
+
+highGPA(s21).
+fairGPA(s22), highGPA(s22). minority(s22).
+fairGPA(s23). minority(s23).
+fairGPA(s24). -minority(s24).
+-highGPA(s25). fairGPA(s25), -fairGPA(s25). minority(s25).
+highGPA(s26), fairGPA(s26).
+highGPA(s27), fairGPA(s27). minority(s27).
+highGPA(s28).
+fairGPA(s29). minority(s29).
+fairGPA(s30).
+minority(s31), highGPA(s31).
+fairGPA(s32), highGPA(s32). minority(s32).
+highGPA(s33).
+-highGPA(s34). -fairGPA(s34), minority(s34).
+-highGPA(s35). -fairGPA(s35). minority(s35).
+fairGPA(s36), highGPA(s36). minority(s36).
+fairGPA(s37). minority(s37).
+highGPA(s38).
+fairGPA(s39). -minority(s39).
+minority(s40).
+-highGPA(s41). fairGPA(s41), -fairGPA(s41). minority(s41).
+fairGPA(s42), highGPA(s42).
+highGPA(s43).
+-highGPA(s44). fairGPA(s44), -fairGPA(s44). minority(s44).
+
+highGPA(s46).
+fairGPA(s47), highGPA(s47). minority(s47).
+fairGPA(s48). minority(s48).
+fairGPA(s49). -minority(s49).
+-highGPA(s50). fairGPA(s50), -fairGPA(s50). minority(s50).
+highGPA(s51), fairGPA(s51).
+highGPA(s52), fairGPA(s52). minority(s52).
+highGPA(s53).
+fairGPA(s54). minority(s54).
+fairGPA(s55).
+minority(s56), highGPA(s56).
+fairGPA(s57), highGPA(s57). minority(s57).
+highGPA(s58).
+-highGPA(s59). -fairGPA(s59), minority(s59).
+-highGPA(s60). -fairGPA(s60). minority(s60).
+fairGPA(s61), highGPA(s61). minority(s61).
+fairGPA(s62). minority(s62).
+highGPA(s63).
+fairGPA(s64). -minority(s64).
+minority(s65).
+-highGPA(s66). fairGPA(s66), -fairGPA(s66). minority(s66).
+fairGPA(s67), highGPA(s67).
+highGPA(s68).
+-highGPA(s69). fairGPA(s69), -fairGPA(s69). minority(s69).
+
+highGPA(s71).
+fairGPA(s72), highGPA(s72). minority(s72).
+fairGPA(s73). minority(s73).
+fairGPA(s74). -minority(s74).
+-highGPA(s75). fairGPA(s75), -fairGPA(s75). minority(s75).
+highGPA(s76), fairGPA(s76).
+highGPA(s77), fairGPA(s77). minority(s77).
+highGPA(s78).
+fairGPA(s79). minority(s79).
+fairGPA(s80).
+minority(s81), highGPA(s81).
+fairGPA(s82), highGPA(s82). minority(s82).
+highGPA(s83).
+-highGPA(s84). -fairGPA(s84), minority(s84).
+-highGPA(s85). -fairGPA(s85). minority(s85).
+fairGPA(s86), highGPA(s86). minority(s86).
+fairGPA(s87). minority(s87).
+highGPA(s88).
+fairGPA(s89). -minority(s89).
+minority(s90).
+-highGPA(s91). fairGPA(s91), -fairGPA(s91). minority(s91).
+fairGPA(s92), highGPA(s92).
+highGPA(s93).
+-highGPA(s94). fairGPA(s94), -fairGPA(s94). minority(s94).
+
+highGPA(s96).
+fairGPA(s97), highGPA(s97). minority(s97).
+fairGPA(s98). minority(s98).
+fairGPA(s99). -minority(s99).
+-highGPA(s100). fairGPA(s100), -fairGPA(s100). minority(s100).
+highGPA(s101), fairGPA(s101).
+highGPA(s102), fairGPA(s102). minority(s102).
+highGPA(s103).
+fairGPA(s104). minority(s104).
+fairGPA(s105).
+minority(s106), highGPA(s106).
+fairGPA(s107), highGPA(s107). minority(s107).
+highGPA(s108).
+-highGPA(s109). -fairGPA(s109), minority(s109).
+-highGPA(s110). -fairGPA(s110). minority(s110).
+fairGPA(s111), highGPA(s111). minority(s111).
+fairGPA(s112). minority(s112).
+highGPA(s113).
+fairGPA(s114). -minority(s114).
+minority(s115).
+-highGPA(s116). fairGPA(s116), -fairGPA(s116). minority(s116).
+fairGPA(s117), highGPA(s117).
+highGPA(s118).
+-highGPA(s119). fairGPA(s119), -fairGPA(s119). minority(s119).
+
+highGPA(s121).
+fairGPA(s122), highGPA(s122). minority(s122).
+fairGPA(s123). minority(s123).
+fairGPA(s124). -minority(s124).
+-highGPA(s125). fairGPA(s125), -fairGPA(s125). minority(s125).
+highGPA(s126), fairGPA(s126).
+highGPA(s127), fairGPA(s127). minority(s127).
+highGPA(s128).
+fairGPA(s129). minority(s129).
+fairGPA(s130).
+minority(s131), highGPA(s131).
+fairGPA(s132), highGPA(s132). minority(s132).
+highGPA(s133).
+-highGPA(s134). -fairGPA(s134), minority(s134).
+-highGPA(s135). -fairGPA(s135). minority(s135).
+fairGPA(s136), highGPA(s136). minority(s136).
+fairGPA(s137). minority(s137).
+highGPA(s138).
+fairGPA(s139). -minority(s139).
+minority(s140).
+-highGPA(s141). fairGPA(s141), -fairGPA(s141). minority(s141).
+fairGPA(s142), highGPA(s142).
+highGPA(s143).
+-highGPA(s144). fairGPA(s144), -fairGPA(s144). minority(s144).
+
+highGPA(s146).
+fairGPA(s147), highGPA(s147). minority(s147).
+fairGPA(s148). minority(s148).
+fairGPA(s149). -minority(s149).
+-highGPA(s150). fairGPA(s150), -fairGPA(s150). minority(s150).
+highGPA(s151), fairGPA(s151).
+highGPA(s152), fairGPA(s152). minority(s152).
+highGPA(s153).
+fairGPA(s154). minority(s154).
+fairGPA(s155).
+minority(s156), highGPA(s156).
+fairGPA(s157), highGPA(s157). minority(s157).
+highGPA(s158).
+-highGPA(s159). -fairGPA(s159), minority(s159).
+-highGPA(s160). -fairGPA(s160). minority(s160).
+fairGPA(s161), highGPA(s161). minority(s161).
+fairGPA(s162). minority(s162).
+highGPA(s163).
+fairGPA(s164). -minority(s164).
+minority(s165).
+-highGPA(s166). fairGPA(s166), -fairGPA(s166). minority(s166).
+fairGPA(s167), highGPA(s167).
+highGPA(s168).
+-highGPA(s169). fairGPA(s169), -fairGPA(s169). minority(s169).
+
+highGPA(s171).
+fairGPA(s172), highGPA(s172). minority(s172).
+fairGPA(s173). minority(s173).
+fairGPA(s174). -minority(s174).
+-highGPA(s175). fairGPA(s175), -fairGPA(s175). minority(s175).
+highGPA(s176), fairGPA(s176).
+highGPA(s177), fairGPA(s177). minority(s177).
+highGPA(s178).
+fairGPA(s179). minority(s179).
+fairGPA(s180).
+minority(s181), highGPA(s181).
+fairGPA(s182), highGPA(s182). minority(s182).
+highGPA(s183).
+-highGPA(s184). -fairGPA(s184), minority(s184).
+-highGPA(s185). -fairGPA(s185). minority(s185).
+fairGPA(s186), highGPA(s186). minority(s186).
+fairGPA(s187). minority(s187).
+highGPA(s188).
+fairGPA(s189). -minority(s189).
+minority(s190).
+-highGPA(s191). fairGPA(s191), -fairGPA(s191). minority(s191).
+fairGPA(s192), highGPA(s192).
+highGPA(s193).
+-highGPA(s194). fairGPA(s194), -fairGPA(s194). minority(s194).
+
+highGPA(s196).
+fairGPA(s197), highGPA(s197). minority(s197).
+fairGPA(s198). minority(s198).
+fairGPA(s199). -minority(s199).
+-highGPA(s200). fairGPA(s200), -fairGPA(s200). minority(s200).
+highGPA(s201), fairGPA(s201).
+highGPA(s202), fairGPA(s202). minority(s202).
+highGPA(s203).
+fairGPA(s204). minority(s204).
+fairGPA(s205).
+minority(s206), highGPA(s206).
+fairGPA(s207), highGPA(s207). minority(s207).
+highGPA(s208).
+-highGPA(s209). -fairGPA(s209), minority(s209).
+-highGPA(s210). -fairGPA(s210). minority(s210).
+fairGPA(s211), highGPA(s211). minority(s211).
+fairGPA(s212). minority(s212).
+highGPA(s213).
+fairGPA(s214). -minority(s214).
+minority(s215).
+-highGPA(s216). fairGPA(s216), -fairGPA(s216). minority(s216).
+fairGPA(s217), highGPA(s217).
+highGPA(s218).
+-highGPA(s219). fairGPA(s219), -fairGPA(s219). minority(s219).
+
+highGPA(s221).
+fairGPA(s222), highGPA(s222). minority(s222).
+fairGPA(s223). minority(s223).
+fairGPA(s224). -minority(s224).
+-highGPA(s225). fairGPA(s225), -fairGPA(s225). minority(s225).
+highGPA(s226), fairGPA(s226).
+highGPA(s227), fairGPA(s227). minority(s227).
+highGPA(s228).
+fairGPA(s229). minority(s229).
+fairGPA(s230).
+minority(s231), highGPA(s231).
+fairGPA(s232), highGPA(s232). minority(s232).
+highGPA(s233).
+-highGPA(s234). -fairGPA(s234), minority(s234).
+-highGPA(s235). -fairGPA(s235). minority(s235).
+fairGPA(s236), highGPA(s236). minority(s236).
+fairGPA(s237). minority(s237).
+highGPA(s238).
+fairGPA(s239). -minority(s239).
+minority(s240).
+-highGPA(s241). fairGPA(s241), -fairGPA(s241). minority(s241).
+fairGPA(s242), highGPA(s242).
+highGPA(s243).
+-highGPA(s244). fairGPA(s244), -fairGPA(s244). minority(s244).
+
+highGPA(s246).
+fairGPA(s247), highGPA(s247). minority(s247).
+fairGPA(s248). minority(s248).
+fairGPA(s249). -minority(s249).
+-highGPA(s250). fairGPA(s250), -fairGPA(s250). minority(s250).
+highGPA(s251), fairGPA(s251).
+highGPA(s252), fairGPA(s252). minority(s252).
+highGPA(s253).
+fairGPA(s254). minority(s254).
+fairGPA(s255).
+minority(s256), highGPA(s256).
+fairGPA(s257), highGPA(s257). minority(s257).
+highGPA(s258).
+-highGPA(s259). -fairGPA(s259), minority(s259).
+-highGPA(s260). -fairGPA(s260). minority(s260).
+fairGPA(s261), highGPA(s261). minority(s261).
+fairGPA(s262). minority(s262).
+highGPA(s263).
+fairGPA(s264). -minority(s264).
+minority(s265).
+-highGPA(s266). fairGPA(s266), -fairGPA(s266). minority(s266).
+fairGPA(s267), highGPA(s267).
+highGPA(s268).
+-highGPA(s269). fairGPA(s269), -fairGPA(s269). minority(s269).
+
+highGPA(s271).
+fairGPA(s272), highGPA(s272). minority(s272).
+fairGPA(s273). minority(s273).
+fairGPA(s274). -minority(s274).
+-highGPA(s275). fairGPA(s275), -fairGPA(s275). minority(s275).
+highGPA(s276), fairGPA(s276).
+highGPA(s277), fairGPA(s277). minority(s277).
+highGPA(s278).
+fairGPA(s279). minority(s279).
+fairGPA(s280).
+minority(s281), highGPA(s281).
+fairGPA(s282), highGPA(s282). minority(s282).
+highGPA(s283).
+-highGPA(s284). -fairGPA(s284), minority(s284).
+-highGPA(s285). -fairGPA(s285). minority(s285).
+fairGPA(s286), highGPA(s286). minority(s286).
+fairGPA(s287). minority(s287).
+highGPA(s288).
+fairGPA(s289). -minority(s289).
+minority(s290).
+-highGPA(s291). fairGPA(s291), -fairGPA(s291). minority(s291).
+fairGPA(s292), highGPA(s292).
+highGPA(s293).
+-highGPA(s294). fairGPA(s294), -fairGPA(s294). minority(s294).
+
+highGPA(s296).
+fairGPA(s297), highGPA(s297). minority(s297).
+fairGPA(s298). minority(s298).
+fairGPA(s299). -minority(s299).
+-highGPA(s300). fairGPA(s300), -fairGPA(s300). minority(s300).
+highGPA(s301), fairGPA(s301).
+highGPA(s302), fairGPA(s302). minority(s302).
+highGPA(s303).
+fairGPA(s304). minority(s304).
+fairGPA(s305).
+minority(s306), highGPA(s306).
+fairGPA(s307), highGPA(s307). minority(s307).
+highGPA(s308).
+-highGPA(s309). -fairGPA(s309), minority(s309).
+-highGPA(s310). -fairGPA(s310). minority(s310).
+fairGPA(s311), highGPA(s311). minority(s311).
+fairGPA(s312). minority(s312).
+highGPA(s313).
+fairGPA(s314). -minority(s314).
+minority(s315).
+-highGPA(s316). fairGPA(s316), -fairGPA(s316). minority(s316).
+fairGPA(s317), highGPA(s317).
+highGPA(s318).
+-highGPA(s319). fairGPA(s319), -fairGPA(s319). minority(s319).
+
+highGPA(s321).
+fairGPA(s322), highGPA(s322). minority(s322).
+fairGPA(s323). minority(s323).
+fairGPA(s324). -minority(s324).
+-highGPA(s325). fairGPA(s325), -fairGPA(s325). minority(s325).
+highGPA(s326), fairGPA(s326).
+highGPA(s327), fairGPA(s327). minority(s327).
+highGPA(s328).
+fairGPA(s329). minority(s329).
+fairGPA(s330).
+minority(s331), highGPA(s331).
+fairGPA(s332), highGPA(s332). minority(s332).
+highGPA(s333).
+-highGPA(s334). -fairGPA(s334), minority(s334).
+-highGPA(s335). -fairGPA(s335). minority(s335).
+fairGPA(s336), highGPA(s336). minority(s336).
+fairGPA(s337). minority(s337).
+highGPA(s338).
+fairGPA(s339). -minority(s339).
+minority(s340).
+-highGPA(s341). fairGPA(s341), -fairGPA(s341). minority(s341).
+fairGPA(s342), highGPA(s342).
+highGPA(s343).
+-highGPA(s344). fairGPA(s344), -fairGPA(s344). minority(s344).
+
+highGPA(s346).
+fairGPA(s347), highGPA(s347). minority(s347).
+fairGPA(s348). minority(s348).
+fairGPA(s349). -minority(s349).
+-highGPA(s350). fairGPA(s350), -fairGPA(s350). minority(s350).
+highGPA(s351), fairGPA(s351).
+highGPA(s352), fairGPA(s352). minority(s352).
+highGPA(s353).
+fairGPA(s354). minority(s354).
+fairGPA(s355).
+minority(s356), highGPA(s356).
+fairGPA(s357), highGPA(s357). minority(s357).
+highGPA(s358).
+-highGPA(s359). -fairGPA(s359), minority(s359).
+-highGPA(s360). -fairGPA(s360). minority(s360).
+fairGPA(s361), highGPA(s361). minority(s361).
+fairGPA(s362). minority(s362).
+highGPA(s363).
+fairGPA(s364). -minority(s364).
+minority(s365).
+-highGPA(s366). fairGPA(s366), -fairGPA(s366). minority(s366).
+fairGPA(s367), highGPA(s367).
+highGPA(s368).
+-highGPA(s369). fairGPA(s369), -fairGPA(s369). minority(s369).
+
+highGPA(s371).
+fairGPA(s372), highGPA(s372). minority(s372).
+fairGPA(s373). minority(s373).
+fairGPA(s374). -minority(s374).
+-highGPA(s375). fairGPA(s375), -fairGPA(s375). minority(s375).
+highGPA(s376), fairGPA(s376).
+highGPA(s377), fairGPA(s377). minority(s377).
+highGPA(s378).
+fairGPA(s379). minority(s379).
+fairGPA(s380).
+minority(s381), highGPA(s381).
+fairGPA(s382), highGPA(s382). minority(s382).
+highGPA(s383).
+-highGPA(s384). -fairGPA(s384), minority(s384).
+-highGPA(s385). -fairGPA(s385). minority(s385).
+fairGPA(s386), highGPA(s386). minority(s386).
+fairGPA(s387). minority(s387).
+highGPA(s388).
+fairGPA(s389). -minority(s389).
+minority(s390).
+-highGPA(s391). fairGPA(s391), -fairGPA(s391). minority(s391).
+fairGPA(s392), highGPA(s392).
+highGPA(s393).
+-highGPA(s394). fairGPA(s394), -fairGPA(s394). minority(s394).
+
+highGPA(s396).
+fairGPA(s397), highGPA(s397). minority(s397).
+fairGPA(s398). minority(s398).
+fairGPA(s399). -minority(s399).
+-highGPA(s400). fairGPA(s400), -fairGPA(s400). minority(s400).
+highGPA(s401), fairGPA(s401).
+highGPA(s402), fairGPA(s402). minority(s402).
+highGPA(s403).
+fairGPA(s404). minority(s404).
+fairGPA(s405).
+minority(s406), highGPA(s406).
+fairGPA(s407), highGPA(s407). minority(s407).
+highGPA(s408).
+-highGPA(s409). -fairGPA(s409), minority(s409).
+-highGPA(s410). -fairGPA(s410). minority(s410).
+fairGPA(s411), highGPA(s411). minority(s411).
+fairGPA(s412). minority(s412).
+highGPA(s413).
+fairGPA(s414). -minority(s414).
+minority(s415).
+-highGPA(s416). fairGPA(s416), -fairGPA(s416). minority(s416).
+fairGPA(s417), highGPA(s417).
+highGPA(s418).
+-highGPA(s419). fairGPA(s419), -fairGPA(s419). minority(s419).
+
+highGPA(s421).
+fairGPA(s422), highGPA(s422). minority(s422).
+fairGPA(s423). minority(s423).
+fairGPA(s424). -minority(s424).
+-highGPA(s425). fairGPA(s425), -fairGPA(s425). minority(s425).
+highGPA(s426), fairGPA(s426).
+highGPA(s427), fairGPA(s427). minority(s427).
+highGPA(s428).
+fairGPA(s429). minority(s429).
+fairGPA(s430).
+minority(s431), highGPA(s431).
+fairGPA(s432), highGPA(s432). minority(s432).
+highGPA(s433).
+-highGPA(s434). -fairGPA(s434), minority(s434).
+-highGPA(s435). -fairGPA(s435). minority(s435).
+fairGPA(s436), highGPA(s436). minority(s436).
+fairGPA(s437). minority(s437).
+highGPA(s438).
+fairGPA(s439). -minority(s439).
+minority(s440).
+-highGPA(s441). fairGPA(s441), -fairGPA(s441). minority(s441).
+fairGPA(s442), highGPA(s442).
+highGPA(s443).
+-highGPA(s444). fairGPA(s444), -fairGPA(s444). minority(s444).
+
+highGPA(s446).
+fairGPA(s447), highGPA(s447). minority(s447).
+fairGPA(s448). minority(s448).
+fairGPA(s449). -minority(s449).
+-highGPA(s450). fairGPA(s450), -fairGPA(s450). minority(s450).
+highGPA(s451), fairGPA(s451).
+highGPA(s452), fairGPA(s452). minority(s452).
+highGPA(s453).
+fairGPA(s454). minority(s454).
+fairGPA(s455).
+minority(s456), highGPA(s456).
+fairGPA(s457), highGPA(s457). minority(s457).
+highGPA(s458).
+-highGPA(s459). -fairGPA(s459), minority(s459).
+-highGPA(s460). -fairGPA(s460). minority(s460).
+fairGPA(s461), highGPA(s461). minority(s461).
+fairGPA(s462). minority(s462).
+highGPA(s463).
+fairGPA(s464). -minority(s464).
+minority(s465).
+-highGPA(s466). fairGPA(s466), -fairGPA(s466). minority(s466).
+fairGPA(s467), highGPA(s467).
+highGPA(s468).
+-highGPA(s469). fairGPA(s469), -fairGPA(s469). minority(s469).
+
+highGPA(s471).
+fairGPA(s472), highGPA(s472). minority(s472).
+fairGPA(s473). minority(s473).
+fairGPA(s474). -minority(s474).
+-highGPA(s475). fairGPA(s475), -fairGPA(s475). minority(s475).
+highGPA(s476), fairGPA(s476).
+highGPA(s477), fairGPA(s477). minority(s477).
+highGPA(s478).
+fairGPA(s479). minority(s479).
+fairGPA(s480).
+minority(s481), highGPA(s481).
+fairGPA(s482), highGPA(s482). minority(s482).
+highGPA(s483).
+-highGPA(s484). -fairGPA(s484), minority(s484).
+-highGPA(s485). -fairGPA(s485). minority(s485).
+fairGPA(s486), highGPA(s486). minority(s486).
+fairGPA(s487). minority(s487).
+highGPA(s488).
+fairGPA(s489). -minority(s489).
+minority(s490).
+-highGPA(s491). fairGPA(s491), -fairGPA(s491). minority(s491).
+fairGPA(s492), highGPA(s492).
+highGPA(s493).
+-highGPA(s494). fairGPA(s494), -fairGPA(s494). minority(s494).
+
+highGPA(s496).
+fairGPA(s497), highGPA(s497). minority(s497).
+fairGPA(s498). minority(s498).
+fairGPA(s499). -minority(s499).
+-highGPA(s500). fairGPA(s500), -fairGPA(s500). minority(s500).
+highGPA(s501), fairGPA(s501).
+highGPA(s502), fairGPA(s502). minority(s502).
+highGPA(s503).
+fairGPA(s504). minority(s504).
+fairGPA(s505).
+minority(s506), highGPA(s506).
+fairGPA(s507), highGPA(s507). minority(s507).
+highGPA(s508).
+-highGPA(s509). -fairGPA(s509), minority(s509).
+-highGPA(s510). -fairGPA(s510). minority(s510).
+fairGPA(s511), highGPA(s511). minority(s511).
+fairGPA(s512). minority(s512).
+highGPA(s513).
+fairGPA(s514). -minority(s514).
+minority(s515).
+-highGPA(s516). fairGPA(s516), -fairGPA(s516). minority(s516).
+fairGPA(s517), highGPA(s517).
+highGPA(s518).
+-highGPA(s519). fairGPA(s519), -fairGPA(s519). minority(s519).
+
+highGPA(s521).
+fairGPA(s522), highGPA(s522). minority(s522).
+fairGPA(s523). minority(s523).
+fairGPA(s524). -minority(s524).
+-highGPA(s525). fairGPA(s525), -fairGPA(s525). minority(s525).
+highGPA(s526), fairGPA(s526).
+highGPA(s527), fairGPA(s527). minority(s527).
+highGPA(s528).
+fairGPA(s529). minority(s529).
+fairGPA(s530).
+minority(s531), highGPA(s531).
+fairGPA(s532), highGPA(s532). minority(s532).
+highGPA(s533).
+-highGPA(s534). -fairGPA(s534), minority(s534).
+-highGPA(s535). -fairGPA(s535). minority(s535).
+fairGPA(s536), highGPA(s536). minority(s536).
+fairGPA(s537). minority(s537).
+highGPA(s538).
+fairGPA(s539). -minority(s539).
+minority(s540).
+-highGPA(s541). fairGPA(s541), -fairGPA(s541). minority(s541).
+fairGPA(s542), highGPA(s542).
+highGPA(s543).
+-highGPA(s544). fairGPA(s544), -fairGPA(s544). minority(s544).
+
+highGPA(s546).
+fairGPA(s547), highGPA(s547). minority(s547).
+fairGPA(s548). minority(s548).
+fairGPA(s549). -minority(s549).
+-highGPA(s550). fairGPA(s550), -fairGPA(s550). minority(s550).
+highGPA(s551), fairGPA(s551).
+highGPA(s552), fairGPA(s552). minority(s552).
+highGPA(s553).
+fairGPA(s554). minority(s554).
+fairGPA(s555).
+minority(s556), highGPA(s556).
+fairGPA(s557), highGPA(s557). minority(s557).
+highGPA(s558).
+-highGPA(s559). -fairGPA(s559), minority(s559).
+-highGPA(s560). -fairGPA(s560). minority(s560).
+fairGPA(s561), highGPA(s561). minority(s561).
+fairGPA(s562). minority(s562).
+highGPA(s563).
+fairGPA(s564). -minority(s564).
+minority(s565).
+-highGPA(s566). fairGPA(s566), -fairGPA(s566). minority(s566).
+fairGPA(s567), highGPA(s567).
+highGPA(s568).
+-highGPA(s569). fairGPA(s569), -fairGPA(s569). minority(s569).
+
+highGPA(s571).
+fairGPA(s572), highGPA(s572). minority(s572).
+fairGPA(s573). minority(s573).
+fairGPA(s574). -minority(s574).
+-highGPA(s575). fairGPA(s575), -fairGPA(s575). minority(s575).
+highGPA(s576), fairGPA(s576).
+highGPA(s577), fairGPA(s577). minority(s577).
+highGPA(s578).
+fairGPA(s579). minority(s579).
+fairGPA(s580).
+minority(s581), highGPA(s581).
+fairGPA(s582), highGPA(s582). minority(s582).
+highGPA(s583).
+-highGPA(s584). -fairGPA(s584), minority(s584).
+-highGPA(s585). -fairGPA(s585). minority(s585).
+fairGPA(s586), highGPA(s586). minority(s586).
+fairGPA(s587). minority(s587).
+highGPA(s588).
+fairGPA(s589). -minority(s589).
+minority(s590).
+-highGPA(s591). fairGPA(s591), -fairGPA(s591). minority(s591).
+fairGPA(s592), highGPA(s592).
+highGPA(s593).
+-highGPA(s594). fairGPA(s594), -fairGPA(s594). minority(s594).
+
+highGPA(s596).
+fairGPA(s597), highGPA(s597). minority(s597).
+fairGPA(s598). minority(s598).
+fairGPA(s599). -minority(s599).
+-highGPA(s600). fairGPA(s600), -fairGPA(s600). minority(s600).
+highGPA(s601), fairGPA(s601).
+highGPA(s602), fairGPA(s602). minority(s602).
+highGPA(s603).
+fairGPA(s604). minority(s604).
+fairGPA(s605).
+minority(s606), highGPA(s606).
+fairGPA(s607), highGPA(s607). minority(s607).
+highGPA(s608).
+-highGPA(s609). -fairGPA(s609), minority(s609).
+-highGPA(s610). -fairGPA(s610). minority(s610).
+fairGPA(s611), highGPA(s611). minority(s611).
+fairGPA(s612). minority(s612).
+highGPA(s613).
+fairGPA(s614). -minority(s614).
+minority(s615).
+-highGPA(s616). fairGPA(s616), -fairGPA(s616). minority(s616).
+fairGPA(s617), highGPA(s617).
+highGPA(s618).
+-highGPA(s619). fairGPA(s619), -fairGPA(s619). minority(s619).
+
+highGPA(s621).
+fairGPA(s622), highGPA(s622). minority(s622).
+fairGPA(s623). minority(s623).
+fairGPA(s624). -minority(s624).
+-highGPA(s625). fairGPA(s625), -fairGPA(s625). minority(s625).
+highGPA(s626), fairGPA(s626).
+highGPA(s627), fairGPA(s627). minority(s627).
+highGPA(s628).
+fairGPA(s629). minority(s629).
+fairGPA(s630).
+minority(s631), highGPA(s631).
+fairGPA(s632), highGPA(s632). minority(s632).
+highGPA(s633).
+-highGPA(s634). -fairGPA(s634), minority(s634).
+-highGPA(s635). -fairGPA(s635). minority(s635).
+fairGPA(s636), highGPA(s636). minority(s636).
+fairGPA(s637). minority(s637).
+highGPA(s638).
+fairGPA(s639). -minority(s639).
+minority(s640).
+-highGPA(s641). fairGPA(s641), -fairGPA(s641). minority(s641).
+fairGPA(s642), highGPA(s642).
+highGPA(s643).
+-highGPA(s644). fairGPA(s644), -fairGPA(s644). minority(s644).
+
+highGPA(s646).
+fairGPA(s647), highGPA(s647). minority(s647).
+fairGPA(s648). minority(s648).
+fairGPA(s649). -minority(s649).
+-highGPA(s650). fairGPA(s650), -fairGPA(s650). minority(s650).
+highGPA(s651), fairGPA(s651).
+highGPA(s652), fairGPA(s652). minority(s652).
+highGPA(s653).
+fairGPA(s654). minority(s654).
+fairGPA(s655).
+minority(s656), highGPA(s656).
+fairGPA(s657), highGPA(s657). minority(s657).
+highGPA(s658).
+-highGPA(s659). -fairGPA(s659), minority(s659).
+-highGPA(s660). -fairGPA(s660). minority(s660).
+fairGPA(s661), highGPA(s661). minority(s661).
+fairGPA(s662). minority(s662).
+highGPA(s663).
+fairGPA(s664). -minority(s664).
+minority(s665).
+-highGPA(s666). fairGPA(s666), -fairGPA(s666). minority(s666).
+fairGPA(s667), highGPA(s667).
+highGPA(s668).
+-highGPA(s669). fairGPA(s669), -fairGPA(s669). minority(s669).
+
+highGPA(s671).
+fairGPA(s672), highGPA(s672). minority(s672).
+fairGPA(s673). minority(s673).
+fairGPA(s674). -minority(s674).
+-highGPA(s675). fairGPA(s675), -fairGPA(s675). minority(s675).
+highGPA(s676), fairGPA(s676).
+highGPA(s677), fairGPA(s677). minority(s677).
+highGPA(s678).
+fairGPA(s679). minority(s679).
+fairGPA(s680).
+minority(s681), highGPA(s681).
+fairGPA(s682), highGPA(s682). minority(s682).
+highGPA(s683).
+-highGPA(s684). -fairGPA(s684), minority(s684).
+-highGPA(s685). -fairGPA(s685). minority(s685).
+fairGPA(s686), highGPA(s686). minority(s686).
+fairGPA(s687). minority(s687).
+highGPA(s688).
+fairGPA(s689). -minority(s689).
+minority(s690).
+-highGPA(s691). fairGPA(s691), -fairGPA(s691). minority(s691).
+fairGPA(s692), highGPA(s692).
+highGPA(s693).
+-highGPA(s694). fairGPA(s694), -fairGPA(s694). minority(s694).
+
+highGPA(s696).
+fairGPA(s697), highGPA(s697). minority(s697).
+fairGPA(s698). minority(s698).
+fairGPA(s699). -minority(s699).
+-highGPA(s700). fairGPA(s700), -fairGPA(s700). minority(s700).
+highGPA(s701), fairGPA(s701).
+highGPA(s702), fairGPA(s702). minority(s702).
+highGPA(s703).
+fairGPA(s704). minority(s704).
+fairGPA(s705).
+minority(s706), highGPA(s706).
+fairGPA(s707), highGPA(s707). minority(s707).
+highGPA(s708).
+-highGPA(s709). -fairGPA(s709), minority(s709).
+-highGPA(s710). -fairGPA(s710). minority(s710).
+fairGPA(s711), highGPA(s711). minority(s711).
+fairGPA(s712). minority(s712).
+highGPA(s713).
+fairGPA(s714). -minority(s714).
+minority(s715).
+-highGPA(s716). fairGPA(s716), -fairGPA(s716). minority(s716).
+fairGPA(s717), highGPA(s717).
+highGPA(s718).
+-highGPA(s719). fairGPA(s719), -fairGPA(s719). minority(s719).
+
+highGPA(s721).
+fairGPA(s722), highGPA(s722). minority(s722).
+fairGPA(s723). minority(s723).
+fairGPA(s724). -minority(s724).
+-highGPA(s725). fairGPA(s725), -fairGPA(s725). minority(s725).
+highGPA(s726), fairGPA(s726).
+highGPA(s727), fairGPA(s727). minority(s727).
+highGPA(s728).
+fairGPA(s729). minority(s729).
+fairGPA(s730).
+minority(s731), highGPA(s731).
+fairGPA(s732), highGPA(s732). minority(s732).
+highGPA(s733).
+-highGPA(s734). -fairGPA(s734), minority(s734).
+-highGPA(s735). -fairGPA(s735). minority(s735).
+fairGPA(s736), highGPA(s736). minority(s736).
+fairGPA(s737). minority(s737).
+highGPA(s738).
+fairGPA(s739). -minority(s739).
+minority(s740).
+-highGPA(s741). fairGPA(s741), -fairGPA(s741). minority(s741).
+fairGPA(s742), highGPA(s742).
+highGPA(s743).
+-highGPA(s744). fairGPA(s744), -fairGPA(s744). minority(s744).
+
+highGPA(s746).
+fairGPA(s747), highGPA(s747). minority(s747).
+fairGPA(s748). minority(s748).
+fairGPA(s749). -minority(s749).
+-highGPA(s750). fairGPA(s750), -fairGPA(s750). minority(s750).
+highGPA(s751), fairGPA(s751).
+highGPA(s752), fairGPA(s752). minority(s752).
+highGPA(s753).
+fairGPA(s754). minority(s754).
+fairGPA(s755).
+minority(s756), highGPA(s756).
+fairGPA(s757), highGPA(s757). minority(s757).
+highGPA(s758).
+-highGPA(s759). -fairGPA(s759), minority(s759).
+-highGPA(s760). -fairGPA(s760). minority(s760).
+fairGPA(s761), highGPA(s761). minority(s761).
+fairGPA(s762). minority(s762).
+highGPA(s763).
+fairGPA(s764). -minority(s764).
+minority(s765).
+-highGPA(s766). fairGPA(s766), -fairGPA(s766). minority(s766).
+fairGPA(s767), highGPA(s767).
+highGPA(s768).
+-highGPA(s769). fairGPA(s769), -fairGPA(s769). minority(s769).
+
+highGPA(s771).
+fairGPA(s772), highGPA(s772). minority(s772).
+fairGPA(s773). minority(s773).
+fairGPA(s774). -minority(s774).
+-highGPA(s775). fairGPA(s775), -fairGPA(s775). minority(s775).
+highGPA(s776), fairGPA(s776).
+highGPA(s777), fairGPA(s777). minority(s777).
+highGPA(s778).
+fairGPA(s779). minority(s779).
+fairGPA(s780).
+minority(s781), highGPA(s781).
+fairGPA(s782), highGPA(s782). minority(s782).
+highGPA(s783).
+-highGPA(s784). -fairGPA(s784), minority(s784).
+-highGPA(s785). -fairGPA(s785). minority(s785).
+fairGPA(s786), highGPA(s786). minority(s786).
+fairGPA(s787). minority(s787).
+highGPA(s788).
+fairGPA(s789). -minority(s789).
+minority(s790).
+-highGPA(s791). fairGPA(s791), -fairGPA(s791). minority(s791).
+fairGPA(s792), highGPA(s792).
+highGPA(s793).
+-highGPA(s794). fairGPA(s794), -fairGPA(s794). minority(s794).
+
+highGPA(s796).
+fairGPA(s797), highGPA(s797). minority(s797).
+fairGPA(s798). minority(s798).
+fairGPA(s799). -minority(s799).
+-highGPA(s800). fairGPA(s800), -fairGPA(s800). minority(s800).
+highGPA(s801), fairGPA(s801).
+highGPA(s802), fairGPA(s802). minority(s802).
+highGPA(s803).
+fairGPA(s804). minority(s804).
+fairGPA(s805).
+minority(s806), highGPA(s806).
+fairGPA(s807), highGPA(s807). minority(s807).
+highGPA(s808).
+-highGPA(s809). -fairGPA(s809), minority(s809).
+-highGPA(s810). -fairGPA(s810). minority(s810).
+fairGPA(s811), highGPA(s811). minority(s811).
+fairGPA(s812). minority(s812).
+highGPA(s813).
+fairGPA(s814). -minority(s814).
+minority(s815).
+-highGPA(s816). fairGPA(s816), -fairGPA(s816). minority(s816).
+fairGPA(s817), highGPA(s817).
+highGPA(s818).
+-highGPA(s819). fairGPA(s819), -fairGPA(s819). minority(s819).
+
+highGPA(s821).
+fairGPA(s822), highGPA(s822). minority(s822).
+fairGPA(s823). minority(s823).
+fairGPA(s824). -minority(s824).
+-highGPA(s825). fairGPA(s825), -fairGPA(s825). minority(s825).
+highGPA(s826), fairGPA(s826).
+highGPA(s827), fairGPA(s827). minority(s827).
+highGPA(s828).
+fairGPA(s829). minority(s829).
+fairGPA(s830).
+minority(s831), highGPA(s831).
+fairGPA(s832), highGPA(s832). minority(s832).
+highGPA(s833).
+-highGPA(s834). -fairGPA(s834), minority(s834).
+-highGPA(s835). -fairGPA(s835). minority(s835).
+fairGPA(s836), highGPA(s836). minority(s836).
+fairGPA(s837). minority(s837).
+highGPA(s838).
+fairGPA(s839). -minority(s839).
+minority(s840).
+-highGPA(s841). fairGPA(s841), -fairGPA(s841). minority(s841).
+fairGPA(s842), highGPA(s842).
+highGPA(s843).
+-highGPA(s844). fairGPA(s844), -fairGPA(s844). minority(s844).
+
+highGPA(s846).
+fairGPA(s847), highGPA(s847). minority(s847).
+fairGPA(s848). minority(s848).
+fairGPA(s849). -minority(s849).
+-highGPA(s850). fairGPA(s850), -fairGPA(s850). minority(s850).
+highGPA(s851), fairGPA(s851).
+highGPA(s852), fairGPA(s852). minority(s852).
+highGPA(s853).
+fairGPA(s854). minority(s854).
+fairGPA(s855).
+minority(s856), highGPA(s856).
+fairGPA(s857), highGPA(s857). minority(s857).
+highGPA(s858).
+-highGPA(s859). -fairGPA(s859), minority(s859).
+-highGPA(s860). -fairGPA(s860). minority(s860).
+fairGPA(s861), highGPA(s861). minority(s861).
+fairGPA(s862). minority(s862).
+highGPA(s863).
+fairGPA(s864). -minority(s864).
+minority(s865).
+-highGPA(s866). fairGPA(s866), -fairGPA(s866). minority(s866).
+fairGPA(s867), highGPA(s867).
+highGPA(s868).
+-highGPA(s869). fairGPA(s869), -fairGPA(s869). minority(s869).
+
+highGPA(s871).
+fairGPA(s872), highGPA(s872). minority(s872).
+fairGPA(s873). minority(s873).
+fairGPA(s874). -minority(s874).
+-highGPA(s875). fairGPA(s875), -fairGPA(s875). minority(s875).
+highGPA(s876), fairGPA(s876).
+highGPA(s877), fairGPA(s877). minority(s877).
+highGPA(s878).
+fairGPA(s879). minority(s879).
+fairGPA(s880).
+minority(s881), highGPA(s881).
+fairGPA(s882), highGPA(s882). minority(s882).
+highGPA(s883).
+-highGPA(s884). -fairGPA(s884), minority(s884).
+-highGPA(s885). -fairGPA(s885). minority(s885).
+fairGPA(s886), highGPA(s886). minority(s886).
+fairGPA(s887). minority(s887).
+highGPA(s888).
+fairGPA(s889). -minority(s889).
+minority(s890).
+-highGPA(s891). fairGPA(s891), -fairGPA(s891). minority(s891).
+fairGPA(s892), highGPA(s892).
+highGPA(s893).
+-highGPA(s894). fairGPA(s894), -fairGPA(s894). minority(s894).
+
+highGPA(s896).
+fairGPA(s897), highGPA(s897). minority(s897).
+fairGPA(s898). minority(s898).
+fairGPA(s899). -minority(s899).
+-highGPA(s900). fairGPA(s900), -fairGPA(s900). minority(s900).
+highGPA(s901), fairGPA(s901).
+highGPA(s902), fairGPA(s902). minority(s902).
+highGPA(s903).
+fairGPA(s904). minority(s904).
+fairGPA(s905).
+minority(s906), highGPA(s906).
+fairGPA(s907), highGPA(s907). minority(s907).
+highGPA(s908).
+-highGPA(s909). -fairGPA(s909), minority(s909).
+-highGPA(s910). -fairGPA(s910). minority(s910).
+fairGPA(s911), highGPA(s911). minority(s911).
+fairGPA(s912). minority(s912).
+highGPA(s913).
+fairGPA(s914). -minority(s914).
+minority(s915).
+-highGPA(s916). fairGPA(s916), -fairGPA(s916). minority(s916).
+fairGPA(s917), highGPA(s917).
+highGPA(s918).
+-highGPA(s919). fairGPA(s919), -fairGPA(s919). minority(s919).
+
+highGPA(s921).
+fairGPA(s922), highGPA(s922). minority(s922).
+fairGPA(s923). minority(s923).
+fairGPA(s924). -minority(s924).
+-highGPA(s925). fairGPA(s925), -fairGPA(s925). minority(s925).
+highGPA(s926), fairGPA(s926).
+highGPA(s927), fairGPA(s927). minority(s927).
+highGPA(s928).
+fairGPA(s929). minority(s929).
+fairGPA(s930).
+minority(s931), highGPA(s931).
+fairGPA(s932), highGPA(s932). minority(s932).
+highGPA(s933).
+-highGPA(s934). -fairGPA(s934), minority(s934).
+-highGPA(s935). -fairGPA(s935). minority(s935).
+fairGPA(s936), highGPA(s936). minority(s936).
+fairGPA(s937). minority(s937).
+highGPA(s938).
+fairGPA(s939). -minority(s939).
+minority(s940).
+-highGPA(s941). fairGPA(s941), -fairGPA(s941). minority(s941).
+fairGPA(s942), highGPA(s942).
+highGPA(s943).
+-highGPA(s944). fairGPA(s944), -fairGPA(s944). minority(s944).
+
+highGPA(s946).
+fairGPA(s947), highGPA(s947). minority(s947).
+fairGPA(s948). minority(s948).
+fairGPA(s949). -minority(s949).
+-highGPA(s950). fairGPA(s950), -fairGPA(s950). minority(s950).
+highGPA(s951), fairGPA(s951).
+highGPA(s952), fairGPA(s952). minority(s952).
+highGPA(s953).
+fairGPA(s954). minority(s954).
+fairGPA(s955).
+minority(s956), highGPA(s956).
+fairGPA(s957), highGPA(s957). minority(s957).
+highGPA(s958).
+-highGPA(s959). -fairGPA(s959), minority(s959).
+-highGPA(s960). -fairGPA(s960). minority(s960).
+fairGPA(s961), highGPA(s961). minority(s961).
+fairGPA(s962). minority(s962).
+highGPA(s963).
+fairGPA(s964). -minority(s964).
+minority(s965).
+-highGPA(s966). fairGPA(s966), -fairGPA(s966). minority(s966).
+fairGPA(s967), highGPA(s967).
+highGPA(s968).
+-highGPA(s969). fairGPA(s969), -fairGPA(s969). minority(s969).
+
+highGPA(s971).
+fairGPA(s972), highGPA(s972). minority(s972).
+fairGPA(s973). minority(s973).
+fairGPA(s974). -minority(s974).
+-highGPA(s975). fairGPA(s975), -fairGPA(s975). minority(s975).
+highGPA(s976), fairGPA(s976).
+highGPA(s977), fairGPA(s977). minority(s977).
+highGPA(s978).
+fairGPA(s979). minority(s979).
+fairGPA(s980).
+minority(s981), highGPA(s981).
+fairGPA(s982), highGPA(s982). minority(s982).
+highGPA(s983).
+-highGPA(s984). -fairGPA(s984), minority(s984).
+-highGPA(s985). -fairGPA(s985). minority(s985).
+fairGPA(s986), highGPA(s986). minority(s986).
+fairGPA(s987). minority(s987).
+highGPA(s988).
+fairGPA(s989). -minority(s989).
+minority(s990).
+-highGPA(s991). fairGPA(s991), -fairGPA(s991). minority(s991).
+fairGPA(s992), highGPA(s992).
+highGPA(s993).
+-highGPA(s994). fairGPA(s994), -fairGPA(s994). minority(s994).
+
+highGPA(s996).
+fairGPA(s997), highGPA(s997). minority(s997).
+fairGPA(s998). minority(s998).
+fairGPA(s999). -minority(s999).
+-highGPA(s1000). fairGPA(s1000), -fairGPA(s1000). minority(s1000).
+highGPA(s1001), fairGPA(s1001).
+highGPA(s1002), fairGPA(s1002). minority(s1002).
+highGPA(s1003).
+fairGPA(s1004). minority(s1004).
+fairGPA(s1005).
+minority(s1006), highGPA(s1006).
+fairGPA(s1007), highGPA(s1007). minority(s1007).
+highGPA(s1008).
+-highGPA(s1009). -fairGPA(s1009), minority(s1009).
+-highGPA(s1010). -fairGPA(s1010). minority(s1010).
+fairGPA(s1011), highGPA(s1011). minority(s1011).
+fairGPA(s1012). minority(s1012).
+highGPA(s1013).
+fairGPA(s1014). -minority(s1014).
+minority(s1015).
+-highGPA(s1016). fairGPA(s1016), -fairGPA(s1016). minority(s1016).
+fairGPA(s1017), highGPA(s1017).
+highGPA(s1018).
+-highGPA(s1019). fairGPA(s1019), -fairGPA(s1019). minority(s1019).
+
+highGPA(s1021).
+fairGPA(s1022), highGPA(s1022). minority(s1022).
+fairGPA(s1023). minority(s1023).
+fairGPA(s1024). -minority(s1024).
+-highGPA(s1025). fairGPA(s1025), -fairGPA(s1025). minority(s1025).
+highGPA(s1026), fairGPA(s1026).
+highGPA(s1027), fairGPA(s1027). minority(s1027).
+highGPA(s1028).
+fairGPA(s1029). minority(s1029).
+fairGPA(s1030).
+minority(s1031), highGPA(s1031).
+fairGPA(s1032), highGPA(s1032). minority(s1032).
+highGPA(s1033).
+-highGPA(s1034). -fairGPA(s1034), minority(s1034).
+-highGPA(s1035). -fairGPA(s1035). minority(s1035).
+fairGPA(s1036), highGPA(s1036). minority(s1036).
+fairGPA(s1037). minority(s1037).
+highGPA(s1038).
+fairGPA(s1039). -minority(s1039).
+minority(s1040).
+-highGPA(s1041). fairGPA(s1041), -fairGPA(s1041). minority(s1041).
+fairGPA(s1042), highGPA(s1042).
+highGPA(s1043).
+-highGPA(s1044). fairGPA(s1044), -fairGPA(s1044). minority(s1044).
+
+highGPA(s1046).
+fairGPA(s1047), highGPA(s1047). minority(s1047).
+fairGPA(s1048). minority(s1048).
+fairGPA(s1049). -minority(s1049).
+-highGPA(s1050). fairGPA(s1050), -fairGPA(s1050). minority(s1050).
+highGPA(s1051), fairGPA(s1051).
+highGPA(s1052), fairGPA(s1052). minority(s1052).
+highGPA(s1053).
+fairGPA(s1054). minority(s1054).
+fairGPA(s1055).
+minority(s1056), highGPA(s1056).
+fairGPA(s1057), highGPA(s1057). minority(s1057).
+highGPA(s1058).
+-highGPA(s1059). -fairGPA(s1059), minority(s1059).
+-highGPA(s1060). -fairGPA(s1060). minority(s1060).
+fairGPA(s1061), highGPA(s1061). minority(s1061).
+fairGPA(s1062). minority(s1062).
+highGPA(s1063).
+fairGPA(s1064). -minority(s1064).
+minority(s1065).
+-highGPA(s1066). fairGPA(s1066), -fairGPA(s1066). minority(s1066).
+fairGPA(s1067), highGPA(s1067).
+highGPA(s1068).
+-highGPA(s1069). fairGPA(s1069), -fairGPA(s1069). minority(s1069).
+
+highGPA(s1071).
+fairGPA(s1072), highGPA(s1072). minority(s1072).
+fairGPA(s1073). minority(s1073).
+fairGPA(s1074). -minority(s1074).
+-highGPA(s1075). fairGPA(s1075), -fairGPA(s1075). minority(s1075).
+highGPA(s1076), fairGPA(s1076).
+highGPA(s1077), fairGPA(s1077). minority(s1077).
+highGPA(s1078).
+fairGPA(s1079). minority(s1079).
+fairGPA(s1080).
+minority(s1081), highGPA(s1081).
+fairGPA(s1082), highGPA(s1082). minority(s1082).
+highGPA(s1083).
+-highGPA(s1084). -fairGPA(s1084), minority(s1084).
+-highGPA(s1085). -fairGPA(s1085). minority(s1085).
+fairGPA(s1086), highGPA(s1086). minority(s1086).
+fairGPA(s1087). minority(s1087).
+highGPA(s1088).
+fairGPA(s1089). -minority(s1089).
+minority(s1090).
+-highGPA(s1091). fairGPA(s1091), -fairGPA(s1091). minority(s1091).
+fairGPA(s1092), highGPA(s1092).
+highGPA(s1093).
+-highGPA(s1094). fairGPA(s1094), -fairGPA(s1094). minority(s1094).
+
+highGPA(s1096).
+fairGPA(s1097), highGPA(s1097). minority(s1097).
+fairGPA(s1098). minority(s1098).
+fairGPA(s1099). -minority(s1099).
+-highGPA(s1100). fairGPA(s1100), -fairGPA(s1100). minority(s1100).
+highGPA(s1101), fairGPA(s1101).
+highGPA(s1102), fairGPA(s1102). minority(s1102).
+highGPA(s1103).
+fairGPA(s1104). minority(s1104).
+fairGPA(s1105).
+minority(s1106), highGPA(s1106).
+fairGPA(s1107), highGPA(s1107). minority(s1107).
+highGPA(s1108).
+-highGPA(s1109). -fairGPA(s1109), minority(s1109).
+-highGPA(s1110). -fairGPA(s1110). minority(s1110).
+fairGPA(s1111), highGPA(s1111). minority(s1111).
+fairGPA(s1112). minority(s1112).
+highGPA(s1113).
+fairGPA(s1114). -minority(s1114).
+minority(s1115).
+-highGPA(s1116). fairGPA(s1116), -fairGPA(s1116). minority(s1116).
+fairGPA(s1117), highGPA(s1117).
+highGPA(s1118).
+-highGPA(s1119). fairGPA(s1119), -fairGPA(s1119). minority(s1119).
+
+highGPA(s1121).
+fairGPA(s1122), highGPA(s1122). minority(s1122).
+fairGPA(s1123). minority(s1123).
+fairGPA(s1124). -minority(s1124).
+-highGPA(s1125). fairGPA(s1125), -fairGPA(s1125). minority(s1125).
+highGPA(s1126), fairGPA(s1126).
+highGPA(s1127), fairGPA(s1127). minority(s1127).
+highGPA(s1128).
+fairGPA(s1129). minority(s1129).
+fairGPA(s1130).
+minority(s1131), highGPA(s1131).
+fairGPA(s1132), highGPA(s1132). minority(s1132).
+highGPA(s1133).
+-highGPA(s1134). -fairGPA(s1134), minority(s1134).
+-highGPA(s1135). -fairGPA(s1135). minority(s1135).
+fairGPA(s1136), highGPA(s1136). minority(s1136).
+fairGPA(s1137). minority(s1137).
+highGPA(s1138).
+fairGPA(s1139). -minority(s1139).
+minority(s1140).
+-highGPA(s1141). fairGPA(s1141), -fairGPA(s1141). minority(s1141).
+fairGPA(s1142), highGPA(s1142).
+highGPA(s1143).
+-highGPA(s1144). fairGPA(s1144), -fairGPA(s1144). minority(s1144).
+
+highGPA(s1146).
+fairGPA(s1147), highGPA(s1147). minority(s1147).
+fairGPA(s1148). minority(s1148).
+fairGPA(s1149). -minority(s1149).
+-highGPA(s1150). fairGPA(s1150), -fairGPA(s1150). minority(s1150).
+highGPA(s1151), fairGPA(s1151).
+highGPA(s1152), fairGPA(s1152). minority(s1152).
+highGPA(s1153).
+fairGPA(s1154). minority(s1154).
+fairGPA(s1155).
+minority(s1156), highGPA(s1156).
+fairGPA(s1157), highGPA(s1157). minority(s1157).
+highGPA(s1158).
+-highGPA(s1159). -fairGPA(s1159), minority(s1159).
+-highGPA(s1160). -fairGPA(s1160). minority(s1160).
+fairGPA(s1161), highGPA(s1161). minority(s1161).
+fairGPA(s1162). minority(s1162).
+highGPA(s1163).
+fairGPA(s1164). -minority(s1164).
+minority(s1165).
+-highGPA(s1166). fairGPA(s1166), -fairGPA(s1166). minority(s1166).
+fairGPA(s1167), highGPA(s1167).
+highGPA(s1168).
+-highGPA(s1169). fairGPA(s1169), -fairGPA(s1169). minority(s1169).
+
+highGPA(s1171).
+fairGPA(s1172), highGPA(s1172). minority(s1172).
+fairGPA(s1173). minority(s1173).
+fairGPA(s1174). -minority(s1174).
+-highGPA(s1175). fairGPA(s1175), -fairGPA(s1175). minority(s1175).
+highGPA(s1176), fairGPA(s1176).
+highGPA(s1177), fairGPA(s1177). minority(s1177).
+highGPA(s1178).
+fairGPA(s1179). minority(s1179).
+fairGPA(s1180).
+minority(s1181), highGPA(s1181).
+fairGPA(s1182), highGPA(s1182). minority(s1182).
+highGPA(s1183).
+-highGPA(s1184). -fairGPA(s1184), minority(s1184).
+-highGPA(s1185). -fairGPA(s1185). minority(s1185).
+fairGPA(s1186), highGPA(s1186). minority(s1186).
+fairGPA(s1187). minority(s1187).
+highGPA(s1188).
+fairGPA(s1189). -minority(s1189).
+minority(s1190).
+-highGPA(s1191). fairGPA(s1191), -fairGPA(s1191). minority(s1191).
+fairGPA(s1192), highGPA(s1192).
+highGPA(s1193).
+-highGPA(s1194). fairGPA(s1194), -fairGPA(s1194). minority(s1194).
+
+highGPA(s1196).
+fairGPA(s1197), highGPA(s1197). minority(s1197).
+fairGPA(s1198). minority(s1198).
+fairGPA(s1199). -minority(s1199).
+-highGPA(s1200). fairGPA(s1200), -fairGPA(s1200). minority(s1200).
+highGPA(s1201), fairGPA(s1201).
+highGPA(s1202), fairGPA(s1202). minority(s1202).
+highGPA(s1203).
+fairGPA(s1204). minority(s1204).
+fairGPA(s1205).
+minority(s1206), highGPA(s1206).
+fairGPA(s1207), highGPA(s1207). minority(s1207).
+highGPA(s1208).
+-highGPA(s1209). -fairGPA(s1209), minority(s1209).
+-highGPA(s1210). -fairGPA(s1210). minority(s1210).
+fairGPA(s1211), highGPA(s1211). minority(s1211).
+fairGPA(s1212). minority(s1212).
+highGPA(s1213).
+fairGPA(s1214). -minority(s1214).
+minority(s1215).
+-highGPA(s1216). fairGPA(s1216), -fairGPA(s1216). minority(s1216).
+fairGPA(s1217), highGPA(s1217).
+highGPA(s1218).
+-highGPA(s1219). fairGPA(s1219), -fairGPA(s1219). minority(s1219).
+
+highGPA(s1221).
+fairGPA(s1222), highGPA(s1222). minority(s1222).
+fairGPA(s1223). minority(s1223).
+fairGPA(s1224). -minority(s1224).
+-highGPA(s1225). fairGPA(s1225), -fairGPA(s1225). minority(s1225).
+highGPA(s1226), fairGPA(s1226).
+highGPA(s1227), fairGPA(s1227). minority(s1227).
+highGPA(s1228).
+fairGPA(s1229). minority(s1229).
+fairGPA(s1230).
+minority(s1231), highGPA(s1231).
+fairGPA(s1232), highGPA(s1232). minority(s1232).
+highGPA(s1233).
+-highGPA(s1234). -fairGPA(s1234), minority(s1234).
+-highGPA(s1235). -fairGPA(s1235). minority(s1235).
+fairGPA(s1236), highGPA(s1236). minority(s1236).
+fairGPA(s1237). minority(s1237).
+highGPA(s1238).
+fairGPA(s1239). -minority(s1239).
+minority(s1240).
+-highGPA(s1241). fairGPA(s1241), -fairGPA(s1241). minority(s1241).
+fairGPA(s1242), highGPA(s1242).
+highGPA(s1243).
+-highGPA(s1244). fairGPA(s1244), -fairGPA(s1244). minority(s1244).
+
+highGPA(s1246).
+fairGPA(s1247), highGPA(s1247). minority(s1247).
+fairGPA(s1248). minority(s1248).
+fairGPA(s1249). -minority(s1249).
+-highGPA(s1250). fairGPA(s1250), -fairGPA(s1250). minority(s1250).
+highGPA(s1251), fairGPA(s1251).
+highGPA(s1252), fairGPA(s1252). minority(s1252).
+highGPA(s1253).
+fairGPA(s1254). minority(s1254).
+fairGPA(s1255).
+minority(s1256), highGPA(s1256).
+fairGPA(s1257), highGPA(s1257). minority(s1257).
+highGPA(s1258).
+-highGPA(s1259). -fairGPA(s1259), minority(s1259).
+-highGPA(s1260). -fairGPA(s1260). minority(s1260).
+fairGPA(s1261), highGPA(s1261). minority(s1261).
+fairGPA(s1262). minority(s1262).
+highGPA(s1263).
+fairGPA(s1264). -minority(s1264).
+minority(s1265).
+-highGPA(s1266). fairGPA(s1266), -fairGPA(s1266). minority(s1266).
+fairGPA(s1267), highGPA(s1267).
+highGPA(s1268).
+-highGPA(s1269). fairGPA(s1269), -fairGPA(s1269). minority(s1269).
+
+highGPA(s1271).
+fairGPA(s1272), highGPA(s1272). minority(s1272).
+fairGPA(s1273). minority(s1273).
+fairGPA(s1274). -minority(s1274).
+-highGPA(s1275). fairGPA(s1275), -fairGPA(s1275). minority(s1275).
+highGPA(s1276), fairGPA(s1276).
+highGPA(s1277), fairGPA(s1277). minority(s1277).
+highGPA(s1278).
+fairGPA(s1279). minority(s1279).
+fairGPA(s1280).
+minority(s1281), highGPA(s1281).
+fairGPA(s1282), highGPA(s1282). minority(s1282).
+highGPA(s1283).
+-highGPA(s1284). -fairGPA(s1284), minority(s1284).
+-highGPA(s1285). -fairGPA(s1285). minority(s1285).
+fairGPA(s1286), highGPA(s1286). minority(s1286).
+fairGPA(s1287). minority(s1287).
+highGPA(s1288).
+fairGPA(s1289). -minority(s1289).
+minority(s1290).
+-highGPA(s1291). fairGPA(s1291), -fairGPA(s1291). minority(s1291).
+fairGPA(s1292), highGPA(s1292).
+highGPA(s1293).
+-highGPA(s1294). fairGPA(s1294), -fairGPA(s1294). minority(s1294).
+
+highGPA(s1296).
+fairGPA(s1297), highGPA(s1297). minority(s1297).
+fairGPA(s1298). minority(s1298).
+fairGPA(s1299). -minority(s1299).
+-highGPA(s1300). fairGPA(s1300), -fairGPA(s1300). minority(s1300).
+highGPA(s1301), fairGPA(s1301).
+highGPA(s1302), fairGPA(s1302). minority(s1302).
+highGPA(s1303).
+fairGPA(s1304). minority(s1304).
+fairGPA(s1305).
+minority(s1306), highGPA(s1306).
+fairGPA(s1307), highGPA(s1307). minority(s1307).
+highGPA(s1308).
+-highGPA(s1309). -fairGPA(s1309), minority(s1309).
+-highGPA(s1310). -fairGPA(s1310). minority(s1310).
+fairGPA(s1311), highGPA(s1311). minority(s1311).
+fairGPA(s1312). minority(s1312).
+highGPA(s1313).
+fairGPA(s1314). -minority(s1314).
+minority(s1315).
+-highGPA(s1316). fairGPA(s1316), -fairGPA(s1316). minority(s1316).
+fairGPA(s1317), highGPA(s1317).
+highGPA(s1318).
+-highGPA(s1319). fairGPA(s1319), -fairGPA(s1319). minority(s1319).
+
+highGPA(s1321).
+fairGPA(s1322), highGPA(s1322). minority(s1322).
+fairGPA(s1323). minority(s1323).
+fairGPA(s1324). -minority(s1324).
+-highGPA(s1325). fairGPA(s1325), -fairGPA(s1325). minority(s1325).
+highGPA(s1326), fairGPA(s1326).
+highGPA(s1327), fairGPA(s1327). minority(s1327).
+highGPA(s1328).
+fairGPA(s1329). minority(s1329).
+fairGPA(s1330).
+minority(s1331), highGPA(s1331).
+fairGPA(s1332), highGPA(s1332). minority(s1332).
+highGPA(s1333).
+-highGPA(s1334). -fairGPA(s1334), minority(s1334).
+-highGPA(s1335). -fairGPA(s1335). minority(s1335).
+fairGPA(s1336), highGPA(s1336). minority(s1336).
+fairGPA(s1337). minority(s1337).
+highGPA(s1338).
+fairGPA(s1339). -minority(s1339).
+minority(s1340).
+student(s1).
+student(s2).
+student(s3).
+student(s4).
+student(s5).
+student(s6).
+student(s7).
+student(s8).
+student(s9).
+student(s10).
+student(s11).
+student(s12).
+student(s13).
+student(s14).
+student(s15).
+student(s16).
+student(s17).
+student(s18).
+student(s19).
+student(s20).
+student(s21).
+student(s22).
+student(s23).
+student(s24).
+student(s25).
+student(s26).
+student(s27).
+student(s28).
+student(s29).
+student(s30).
+student(s31).
+student(s32).
+student(s33).
+student(s34).
+student(s35).
+student(s36).
+student(s37).
+student(s38).
+student(s39).
+student(s40).
+student(s41).
+student(s42).
+student(s43).
+student(s44).
+student(s45).
+student(s46).
+student(s47).
+student(s48).
+student(s49).
+student(s50).
+student(s51).
+student(s52).
+student(s53).
+student(s54).
+student(s55).
+student(s56).
+student(s57).
+student(s58).
+student(s59).
+student(s60).
+student(s61).
+student(s62).
+student(s63).
+student(s64).
+student(s65).
+student(s66).
+student(s67).
+student(s68).
+student(s69).
+student(s70).
+student(s71).
+student(s72).
+student(s73).
+student(s74).
+student(s75).
+student(s76).
+student(s77).
+student(s78).
+student(s79).
+student(s80).
+student(s81).
+student(s82).
+student(s83).
+student(s84).
+student(s85).
+student(s86).
+student(s87).
+student(s88).
+student(s89).
+student(s90).
+student(s91).
+student(s92).
+student(s93).
+student(s94).
+student(s95).
+student(s96).
+student(s97).
+student(s98).
+student(s99).
+student(s100).
+student(s101).
+student(s102).
+student(s103).
+student(s104).
+student(s105).
+student(s106).
+student(s107).
+student(s108).
+student(s109).
+student(s110).
+student(s111).
+student(s112).
+student(s113).
+student(s114).
+student(s115).
+student(s116).
+student(s117).
+student(s118).
+student(s119).
+student(s120).
+student(s121).
+student(s122).
+student(s123).
+student(s124).
+student(s125).
+student(s126).
+student(s127).
+student(s128).
+student(s129).
+student(s130).
+student(s131).
+student(s132).
+student(s133).
+student(s134).
+student(s135).
+student(s136).
+student(s137).
+student(s138).
+student(s139).
+student(s140).
+student(s141).
+student(s142).
+student(s143).
+student(s144).
+student(s145).
+student(s146).
+student(s147).
+student(s148).
+student(s149).
+student(s150).
+student(s151).
+student(s152).
+student(s153).
+student(s154).
+student(s155).
+student(s156).
+student(s157).
+student(s158).
+student(s159).
+student(s160).
+student(s161).
+student(s162).
+student(s163).
+student(s164).
+student(s165).
+student(s166).
+student(s167).
+student(s168).
+student(s169).
+student(s170).
+student(s171).
+student(s172).
+student(s173).
+student(s174).
+student(s175).
+student(s176).
+student(s177).
+student(s178).
+student(s179).
+student(s180).
+student(s181).
+student(s182).
+student(s183).
+student(s184).
+student(s185).
+student(s186).
+student(s187).
+student(s188).
+student(s189).
+student(s190).
+student(s191).
+student(s192).
+student(s193).
+student(s194).
+student(s195).
+student(s196).
+student(s197).
+student(s198).
+student(s199).
+student(s200).
+student(s201).
+student(s202).
+student(s203).
+student(s204).
+student(s205).
+student(s206).
+student(s207).
+student(s208).
+student(s209).
+student(s210).
+student(s211).
+student(s212).
+student(s213).
+student(s214).
+student(s215).
+student(s216).
+student(s217).
+student(s218).
+student(s219).
+student(s220).
+student(s221).
+student(s222).
+student(s223).
+student(s224).
+student(s225).
+student(s226).
+student(s227).
+student(s228).
+student(s229).
+student(s230).
+student(s231).
+student(s232).
+student(s233).
+student(s234).
+student(s235).
+student(s236).
+student(s237).
+student(s238).
+student(s239).
+student(s240).
+student(s241).
+student(s242).
+student(s243).
+student(s244).
+student(s245).
+student(s246).
+student(s247).
+student(s248).
+student(s249).
+student(s250).
+student(s251).
+student(s252).
+student(s253).
+student(s254).
+student(s255).
+student(s256).
+student(s257).
+student(s258).
+student(s259).
+student(s260).
+student(s261).
+student(s262).
+student(s263).
+student(s264).
+student(s265).
+student(s266).
+student(s267).
+student(s268).
+student(s269).
+student(s270).
+student(s271).
+student(s272).
+student(s273).
+student(s274).
+student(s275).
+student(s276).
+student(s277).
+student(s278).
+student(s279).
+student(s280).
+student(s281).
+student(s282).
+student(s283).
+student(s284).
+student(s285).
+student(s286).
+student(s287).
+student(s288).
+student(s289).
+student(s290).
+student(s291).
+student(s292).
+student(s293).
+student(s294).
+student(s295).
+student(s296).
+student(s297).
+student(s298).
+student(s299).
+student(s300).
+student(s301).
+student(s302).
+student(s303).
+student(s304).
+student(s305).
+student(s306).
+student(s307).
+student(s308).
+student(s309).
+student(s310).
+student(s311).
+student(s312).
+student(s313).
+student(s314).
+student(s315).
+student(s316).
+student(s317).
+student(s318).
+student(s319).
+student(s320).
+student(s321).
+student(s322).
+student(s323).
+student(s324).
+student(s325).
+student(s326).
+student(s327).
+student(s328).
+student(s329).
+student(s330).
+student(s331).
+student(s332).
+student(s333).
+student(s334).
+student(s335).
+student(s336).
+student(s337).
+student(s338).
+student(s339).
+student(s340).
+student(s341).
+student(s342).
+student(s343).
+student(s344).
+student(s345).
+student(s346).
+student(s347).
+student(s348).
+student(s349).
+student(s350).
+student(s351).
+student(s352).
+student(s353).
+student(s354).
+student(s355).
+student(s356).
+student(s357).
+student(s358).
+student(s359).
+student(s360).
+student(s361).
+student(s362).
+student(s363).
+student(s364).
+student(s365).
+student(s366).
+student(s367).
+student(s368).
+student(s369).
+student(s370).
+student(s371).
+student(s372).
+student(s373).
+student(s374).
+student(s375).
+student(s376).
+student(s377).
+student(s378).
+student(s379).
+student(s380).
+student(s381).
+student(s382).
+student(s383).
+student(s384).
+student(s385).
+student(s386).
+student(s387).
+student(s388).
+student(s389).
+student(s390).
+student(s391).
+student(s392).
+student(s393).
+student(s394).
+student(s395).
+student(s396).
+student(s397).
+student(s398).
+student(s399).
+student(s400).
+student(s401).
+student(s402).
+student(s403).
+student(s404).
+student(s405).
+student(s406).
+student(s407).
+student(s408).
+student(s409).
+student(s410).
+student(s411).
+student(s412).
+student(s413).
+student(s414).
+student(s415).
+student(s416).
+student(s417).
+student(s418).
+student(s419).
+student(s420).
+student(s421).
+student(s422).
+student(s423).
+student(s424).
+student(s425).
+student(s426).
+student(s427).
+student(s428).
+student(s429).
+student(s430).
+student(s431).
+student(s432).
+student(s433).
+student(s434).
+student(s435).
+student(s436).
+student(s437).
+student(s438).
+student(s439).
+student(s440).
+student(s441).
+student(s442).
+student(s443).
+student(s444).
+student(s445).
+student(s446).
+student(s447).
+student(s448).
+student(s449).
+student(s450).
+student(s451).
+student(s452).
+student(s453).
+student(s454).
+student(s455).
+student(s456).
+student(s457).
+student(s458).
+student(s459).
+student(s460).
+student(s461).
+student(s462).
+student(s463).
+student(s464).
+student(s465).
+student(s466).
+student(s467).
+student(s468).
+student(s469).
+student(s470).
+student(s471).
+student(s472).
+student(s473).
+student(s474).
+student(s475).
+student(s476).
+student(s477).
+student(s478).
+student(s479).
+student(s480).
+student(s481).
+student(s482).
+student(s483).
+student(s484).
+student(s485).
+student(s486).
+student(s487).
+student(s488).
+student(s489).
+student(s490).
+student(s491).
+student(s492).
+student(s493).
+student(s494).
+student(s495).
+student(s496).
+student(s497).
+student(s498).
+student(s499).
+student(s500).
+student(s501).
+student(s502).
+student(s503).
+student(s504).
+student(s505).
+student(s506).
+student(s507).
+student(s508).
+student(s509).
+student(s510).
+student(s511).
+student(s512).
+student(s513).
+student(s514).
+student(s515).
+student(s516).
+student(s517).
+student(s518).
+student(s519).
+student(s520).
+student(s521).
+student(s522).
+student(s523).
+student(s524).
+student(s525).
+student(s526).
+student(s527).
+student(s528).
+student(s529).
+student(s530).
+student(s531).
+student(s532).
+student(s533).
+student(s534).
+student(s535).
+student(s536).
+student(s537).
+student(s538).
+student(s539).
+student(s540).
+student(s541).
+student(s542).
+student(s543).
+student(s544).
+student(s545).
+student(s546).
+student(s547).
+student(s548).
+student(s549).
+student(s550).
+student(s551).
+student(s552).
+student(s553).
+student(s554).
+student(s555).
+student(s556).
+student(s557).
+student(s558).
+student(s559).
+student(s560).
+student(s561).
+student(s562).
+student(s563).
+student(s564).
+student(s565).
+student(s566).
+student(s567).
+student(s568).
+student(s569).
+student(s570).
+student(s571).
+student(s572).
+student(s573).
+student(s574).
+student(s575).
+student(s576).
+student(s577).
+student(s578).
+student(s579).
+student(s580).
+student(s581).
+student(s582).
+student(s583).
+student(s584).
+student(s585).
+student(s586).
+student(s587).
+student(s588).
+student(s589).
+student(s590).
+student(s591).
+student(s592).
+student(s593).
+student(s594).
+student(s595).
+student(s596).
+student(s597).
+student(s598).
+student(s599).
+student(s600).
+student(s601).
+student(s602).
+student(s603).
+student(s604).
+student(s605).
+student(s606).
+student(s607).
+student(s608).
+student(s609).
+student(s610).
+student(s611).
+student(s612).
+student(s613).
+student(s614).
+student(s615).
+student(s616).
+student(s617).
+student(s618).
+student(s619).
+student(s620).
+student(s621).
+student(s622).
+student(s623).
+student(s624).
+student(s625).
+student(s626).
+student(s627).
+student(s628).
+student(s629).
+student(s630).
+student(s631).
+student(s632).
+student(s633).
+student(s634).
+student(s635).
+student(s636).
+student(s637).
+student(s638).
+student(s639).
+student(s640).
+student(s641).
+student(s642).
+student(s643).
+student(s644).
+student(s645).
+student(s646).
+student(s647).
+student(s648).
+student(s649).
+student(s650).
+student(s651).
+student(s652).
+student(s653).
+student(s654).
+student(s655).
+student(s656).
+student(s657).
+student(s658).
+student(s659).
+student(s660).
+student(s661).
+student(s662).
+student(s663).
+student(s664).
+student(s665).
+student(s666).
+student(s667).
+student(s668).
+student(s669).
+student(s670).
+student(s671).
+student(s672).
+student(s673).
+student(s674).
+student(s675).
+student(s676).
+student(s677).
+student(s678).
+student(s679).
+student(s680).
+student(s681).
+student(s682).
+student(s683).
+student(s684).
+student(s685).
+student(s686).
+student(s687).
+student(s688).
+student(s689).
+student(s690).
+student(s691).
+student(s692).
+student(s693).
+student(s694).
+student(s695).
+student(s696).
+student(s697).
+student(s698).
+student(s699).
+student(s700).
+student(s701).
+student(s702).
+student(s703).
+student(s704).
+student(s705).
+student(s706).
+student(s707).
+student(s708).
+student(s709).
+student(s710).
+student(s711).
+student(s712).
+student(s713).
+student(s714).
+student(s715).
+student(s716).
+student(s717).
+student(s718).
+student(s719).
+student(s720).
+student(s721).
+student(s722).
+student(s723).
+student(s724).
+student(s725).
+student(s726).
+student(s727).
+student(s728).
+student(s729).
+student(s730).
+student(s731).
+student(s732).
+student(s733).
+student(s734).
+student(s735).
+student(s736).
+student(s737).
+student(s738).
+student(s739).
+student(s740).
+student(s741).
+student(s742).
+student(s743).
+student(s744).
+student(s745).
+student(s746).
+student(s747).
+student(s748).
+student(s749).
+student(s750).
+student(s751).
+student(s752).
+student(s753).
+student(s754).
+student(s755).
+student(s756).
+student(s757).
+student(s758).
+student(s759).
+student(s760).
+student(s761).
+student(s762).
+student(s763).
+student(s764).
+student(s765).
+student(s766).
+student(s767).
+student(s768).
+student(s769).
+student(s770).
+student(s771).
+student(s772).
+student(s773).
+student(s774).
+student(s775).
+student(s776).
+student(s777).
+student(s778).
+student(s779).
+student(s780).
+student(s781).
+student(s782).
+student(s783).
+student(s784).
+student(s785).
+student(s786).
+student(s787).
+student(s788).
+student(s789).
+student(s790).
+student(s791).
+student(s792).
+student(s793).
+student(s794).
+student(s795).
+student(s796).
+student(s797).
+student(s798).
+student(s799).
+student(s800).
+student(s801).
+student(s802).
+student(s803).
+student(s804).
+student(s805).
+student(s806).
+student(s807).
+student(s808).
+student(s809).
+student(s810).
+student(s811).
+student(s812).
+student(s813).
+student(s814).
+student(s815).
+student(s816).
+student(s817).
+student(s818).
+student(s819).
+student(s820).
+student(s821).
+student(s822).
+student(s823).
+student(s824).
+student(s825).
+student(s826).
+student(s827).
+student(s828).
+student(s829).
+student(s830).
+student(s831).
+student(s832).
+student(s833).
+student(s834).
+student(s835).
+student(s836).
+student(s837).
+student(s838).
+student(s839).
+student(s840).
+student(s841).
+student(s842).
+student(s843).
+student(s844).
+student(s845).
+student(s846).
+student(s847).
+student(s848).
+student(s849).
+student(s850).
+student(s851).
+student(s852).
+student(s853).
+student(s854).
+student(s855).
+student(s856).
+student(s857).
+student(s858).
+student(s859).
+student(s860).
+student(s861).
+student(s862).
+student(s863).
+student(s864).
+student(s865).
+student(s866).
+student(s867).
+student(s868).
+student(s869).
+student(s870).
+student(s871).
+student(s872).
+student(s873).
+student(s874).
+student(s875).
+student(s876).
+student(s877).
+student(s878).
+student(s879).
+student(s880).
+student(s881).
+student(s882).
+student(s883).
+student(s884).
+student(s885).
+student(s886).
+student(s887).
+student(s888).
+student(s889).
+student(s890).
+student(s891).
+student(s892).
+student(s893).
+student(s894).
+student(s895).
+student(s896).
+student(s897).
+student(s898).
+student(s899).
+student(s900).
+student(s901).
+student(s902).
+student(s903).
+student(s904).
+student(s905).
+student(s906).
+student(s907).
+student(s908).
+student(s909).
+student(s910).
+student(s911).
+student(s912).
+student(s913).
+student(s914).
+student(s915).
+student(s916).
+student(s917).
+student(s918).
+student(s919).
+student(s920).
+student(s921).
+student(s922).
+student(s923).
+student(s924).
+student(s925).
+student(s926).
+student(s927).
+student(s928).
+student(s929).
+student(s930).
+student(s931).
+student(s932).
+student(s933).
+student(s934).
+student(s935).
+student(s936).
+student(s937).
+student(s938).
+student(s939).
+student(s940).
+student(s941).
+student(s942).
+student(s943).
+student(s944).
+student(s945).
+student(s946).
+student(s947).
+student(s948).
+student(s949).
+student(s950).
+student(s951).
+student(s952).
+student(s953).
+student(s954).
+student(s955).
+student(s956).
+student(s957).
+student(s958).
+student(s959).
+student(s960).
+student(s961).
+student(s962).
+student(s963).
+student(s964).
+student(s965).
+student(s966).
+student(s967).
+student(s968).
+student(s969).
+student(s970).
+student(s971).
+student(s972).
+student(s973).
+student(s974).
+student(s975).
+student(s976).
+student(s977).
+student(s978).
+student(s979).
+student(s980).
+student(s981).
+student(s982).
+student(s983).
+student(s984).
+student(s985).
+student(s986).
+student(s987).
+student(s988).
+student(s989).
+student(s990).
+student(s991).
+student(s992).
+student(s993).
+student(s994).
+student(s995).
+student(s996).
+student(s997).
+student(s998).
+student(s999).
+student(s1000).
+student(s1001).
+student(s1002).
+student(s1003).
+student(s1004).
+student(s1005).
+student(s1006).
+student(s1007).
+student(s1008).
+student(s1009).
+student(s1010).
+student(s1011).
+student(s1012).
+student(s1013).
+student(s1014).
+student(s1015).
+student(s1016).
+student(s1017).
+student(s1018).
+student(s1019).
+student(s1020).
+student(s1021).
+student(s1022).
+student(s1023).
+student(s1024).
+student(s1025).
+student(s1026).
+student(s1027).
+student(s1028).
+student(s1029).
+student(s1030).
+student(s1031).
+student(s1032).
+student(s1033).
+student(s1034).
+student(s1035).
+student(s1036).
+student(s1037).
+student(s1038).
+student(s1039).
+student(s1040).
+student(s1041).
+student(s1042).
+student(s1043).
+student(s1044).
+student(s1045).
+student(s1046).
+student(s1047).
+student(s1048).
+student(s1049).
+student(s1050).
+student(s1051).
+student(s1052).
+student(s1053).
+student(s1054).
+student(s1055).
+student(s1056).
+student(s1057).
+student(s1058).
+student(s1059).
+student(s1060).
+student(s1061).
+student(s1062).
+student(s1063).
+student(s1064).
+student(s1065).
+student(s1066).
+student(s1067).
+student(s1068).
+student(s1069).
+student(s1070).
+student(s1071).
+student(s1072).
+student(s1073).
+student(s1074).
+student(s1075).
+student(s1076).
+student(s1077).
+student(s1078).
+student(s1079).
+student(s1080).
+student(s1081).
+student(s1082).
+student(s1083).
+student(s1084).
+student(s1085).
+student(s1086).
+student(s1087).
+student(s1088).
+student(s1089).
+student(s1090).
+student(s1091).
+student(s1092).
+student(s1093).
+student(s1094).
+student(s1095).
+student(s1096).
+student(s1097).
+student(s1098).
+student(s1099).
+student(s1100).
+student(s1101).
+student(s1102).
+student(s1103).
+student(s1104).
+student(s1105).
+student(s1106).
+student(s1107).
+student(s1108).
+student(s1109).
+student(s1110).
+student(s1111).
+student(s1112).
+student(s1113).
+student(s1114).
+student(s1115).
+student(s1116).
+student(s1117).
+student(s1118).
+student(s1119).
+student(s1120).
+student(s1121).
+student(s1122).
+student(s1123).
+student(s1124).
+student(s1125).
+student(s1126).
+student(s1127).
+student(s1128).
+student(s1129).
+student(s1130).
+student(s1131).
+student(s1132).
+student(s1133).
+student(s1134).
+student(s1135).
+student(s1136).
+student(s1137).
+student(s1138).
+student(s1139).
+student(s1140).
+student(s1141).
+student(s1142).
+student(s1143).
+student(s1144).
+student(s1145).
+student(s1146).
+student(s1147).
+student(s1148).
+student(s1149).
+student(s1150).
+student(s1151).
+student(s1152).
+student(s1153).
+student(s1154).
+student(s1155).
+student(s1156).
+student(s1157).
+student(s1158).
+student(s1159).
+student(s1160).
+student(s1161).
+student(s1162).
+student(s1163).
+student(s1164).
+student(s1165).
+student(s1166).
+student(s1167).
+student(s1168).
+student(s1169).
+student(s1170).
+student(s1171).
+student(s1172).
+student(s1173).
+student(s1174).
+student(s1175).
+student(s1176).
+student(s1177).
+student(s1178).
+student(s1179).
+student(s1180).
+student(s1181).
+student(s1182).
+student(s1183).
+student(s1184).
+student(s1185).
+student(s1186).
+student(s1187).
+student(s1188).
+student(s1189).
+student(s1190).
+student(s1191).
+student(s1192).
+student(s1193).
+student(s1194).
+student(s1195).
+student(s1196).
+student(s1197).
+student(s1198).
+student(s1199).
+student(s1200).
+student(s1201).
+student(s1202).
+student(s1203).
+student(s1204).
+student(s1205).
+student(s1206).
+student(s1207).
+student(s1208).
+student(s1209).
+student(s1210).
+student(s1211).
+student(s1212).
+student(s1213).
+student(s1214).
+student(s1215).
+student(s1216).
+student(s1217).
+student(s1218).
+student(s1219).
+student(s1220).
+student(s1221).
+student(s1222).
+student(s1223).
+student(s1224).
+student(s1225).
+student(s1226).
+student(s1227).
+student(s1228).
+student(s1229).
+student(s1230).
+student(s1231).
+student(s1232).
+student(s1233).
+student(s1234).
+student(s1235).
+student(s1236).
+student(s1237).
+student(s1238).
+student(s1239).
+student(s1240).
+student(s1241).
+student(s1242).
+student(s1243).
+student(s1244).
+student(s1245).
+student(s1246).
+student(s1247).
+student(s1248).
+student(s1249).
+student(s1250).
+student(s1251).
+student(s1252).
+student(s1253).
+student(s1254).
+student(s1255).
+student(s1256).
+student(s1257).
+student(s1258).
+student(s1259).
+student(s1260).
+student(s1261).
+student(s1262).
+student(s1263).
+student(s1264).
+student(s1265).
+student(s1266).
+student(s1267).
+student(s1268).
+student(s1269).
+student(s1270).
+student(s1271).
+student(s1272).
+student(s1273).
+student(s1274).
+student(s1275).
+student(s1276).
+student(s1277).
+student(s1278).
+student(s1279).
+student(s1280).
+student(s1281).
+student(s1282).
+student(s1283).
+student(s1284).
+student(s1285).
+student(s1286).
+student(s1287).
+student(s1288).
+student(s1289).
+student(s1290).
+student(s1291).
+student(s1292).
+student(s1293).
+student(s1294).
+student(s1295).
+student(s1296).
+student(s1297).
+student(s1298).
+student(s1299).
+student(s1300).
+student(s1301).
+student(s1302).
+student(s1303).
+student(s1304).
+student(s1305).
+student(s1306).
+student(s1307).
+student(s1308).
+student(s1309).
+student(s1310).
+student(s1311).
+student(s1312).
+student(s1313).
+student(s1314).
+student(s1315).
+student(s1316).
+student(s1317).
+student(s1318).
+student(s1319).
+student(s1320).
+student(s1321).
+student(s1322).
+student(s1323).
+student(s1324).
+student(s1325).
+student(s1326).
+student(s1327).
+student(s1328).
+student(s1329).
+student(s1330).
+student(s1331).
+student(s1332).
+student(s1333).
+student(s1334).
+student(s1335).
+student(s1336).
+student(s1337).
+student(s1338).
+student(s1339).
+student(s1340).

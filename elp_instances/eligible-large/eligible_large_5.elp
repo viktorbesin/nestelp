@@ -1,0 +1,14 @@
+eligible(X) :- highGPA(X), student(X).
+eligible(X) :- minority(X), fairGPA(X), student(X).
+-eligible(X) :- -fairGPA(X), -highGPA(X), student(X).
+interview(X) :- not &k{ eligible(X) }, not &k{ -eligible(X) }, student(X).
+highGPA(s1), fairGPA(s1).
+highGPA(s2), fairGPA(s2). minority(s2).
+highGPA(s3).
+fairGPA(s4). minority(s4).
+fairGPA(s5).
+student(s1).
+student(s2).
+student(s3).
+student(s4).
+student(s5).

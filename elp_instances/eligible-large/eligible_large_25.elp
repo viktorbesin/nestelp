@@ -1,0 +1,54 @@
+eligible(X) :- highGPA(X), student(X).
+eligible(X) :- minority(X), fairGPA(X), student(X).
+-eligible(X) :- -fairGPA(X), -highGPA(X), student(X).
+interview(X) :- not &k{ eligible(X) }, not &k{ -eligible(X) }, student(X).
+highGPA(s1), fairGPA(s1).
+highGPA(s2), fairGPA(s2). minority(s2).
+highGPA(s3).
+fairGPA(s4). minority(s4).
+fairGPA(s5).
+minority(s6), highGPA(s6).
+fairGPA(s7), highGPA(s7). minority(s7).
+highGPA(s8).
+-highGPA(s9). -fairGPA(s9), minority(s9).
+-highGPA(s10). -fairGPA(s10). minority(s10).
+fairGPA(s11), highGPA(s11). minority(s11).
+fairGPA(s12). minority(s12).
+highGPA(s13).
+fairGPA(s14). -minority(s14).
+minority(s15).
+-highGPA(s16). fairGPA(s16), -fairGPA(s16). minority(s16).
+fairGPA(s17), highGPA(s17).
+highGPA(s18).
+-highGPA(s19). fairGPA(s19), -fairGPA(s19). minority(s19).
+
+highGPA(s21).
+fairGPA(s22), highGPA(s22). minority(s22).
+fairGPA(s23). minority(s23).
+fairGPA(s24). -minority(s24).
+-highGPA(s25). fairGPA(s25), -fairGPA(s25). minority(s25).
+student(s1).
+student(s2).
+student(s3).
+student(s4).
+student(s5).
+student(s6).
+student(s7).
+student(s8).
+student(s9).
+student(s10).
+student(s11).
+student(s12).
+student(s13).
+student(s14).
+student(s15).
+student(s16).
+student(s17).
+student(s18).
+student(s19).
+student(s20).
+student(s21).
+student(s22).
+student(s23).
+student(s24).
+student(s25).
