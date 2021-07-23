@@ -242,6 +242,9 @@ class NestElp(Problem):
                 n = node.vertices[i]
                 # build reduct
                 reduct = get_subjective_reduct(reduct, self.var_symbol_dict, self.extra_atoms, n, v)
+                # check if atom is in head of any rules, otherwise do not check in reduct(!)
+                if not (in_head(rules, n)):
+                    continue
                 if v != None:
                     # for atoms saved negative, flip the value
                     _factor = 1
@@ -250,16 +253,16 @@ class NestElp(Problem):
                         _factor = -1
                     # use the opposite and check for empty set
                     if v:
-                        if node.needs_introduce(n):
+                        if node.needs_introduce(n) or in_head(rules, n):
                             pn_constraint['body'].append(n*_factor)
                         pn_constraint_a['body'].append(n*_factor)
                     else:
-                        if node.needs_introduce(n):
+                        if node.needs_introduce(n) or in_head(rules, n):
                             pn_constraint['body'].append((-1) * n*_factor)
                         pn_constraint_a['body'].append((-1) * n*_factor)
                 else:
                     # undecided
-                    if node.needs_introduce(n):
+                    if node.needs_introduce(n) or in_head(rules, n):
                         undecided_constraints.append(({'head': [], 'body': [n]}, {'head': [], 'body': [(-1) * n]}))
                     undecided_constraints_a.append(({'head': [], 'body': [n]}, {'head': [], 'body': [(-1) * n]}))
 
@@ -401,6 +404,7 @@ class NestElp(Problem):
             is_sat = self.db.replace_dynamic_tabs(f"(select exists(select 1 from {root_tab}))")
             self.db.ignore_next_praefix()
             self.sat = self.db.update("problem_elp", ["is_sat"], [is_sat], [f"ID = {self.id}"], "is_sat")[0]
+            # print (self.sat)
             # logger.info("Problem is %s", "SAT" if self.sat else "UNSAT")
 
 

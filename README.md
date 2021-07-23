@@ -25,6 +25,9 @@ Branch `normalize_cli` is required by nestelp (currently not included in htd's m
 pip install -r requirements.txt
 ```
 
+### Submodules
+Please pull the submodules recursively when pulling this repository. 
+
 ## Configuration
 Basic configuration (database connection, htd path, thresholds, ...) are configured in **config.json**
 

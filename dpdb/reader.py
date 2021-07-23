@@ -418,10 +418,8 @@ class QuantitiveSelectionReader():
             if symbol.startswith('-'):
                 symbol = symbol[1:]
                 _factor = -1
-            print (symbol)
             atom = None
             # get atom-nr by symbol
-            print (self.elp.var_symbol_dict)
             for a, s in self.elp.var_symbol_dict.items():
                 if s == symbol:
                     atom = a
@@ -509,7 +507,8 @@ class ELPReader(Reader):
         # add unmatched atoms
         for r in self.clingo_rules:
             for a in r.head + r.body:
-                self.atoms.add(abs(a))
+                if a != _external_atom:
+                    self.atoms.add(abs(a))
 
         for key, value in eclingo_control._epistemic_atoms.items():
             if (str(value) in self.symbol_var_dict.keys()):

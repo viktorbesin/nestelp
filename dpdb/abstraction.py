@@ -64,54 +64,6 @@ class Abstraction:
         #return len(projected), self.mg.edges
         return len(projected), self.mg.normalized_edges
 
-    def solve_external(self, num_vars, clauses, extra_clauses, proj_vars=None):
-        logger.debug("Calling external solver for {} with {} clauses, {} vars, and proj {}".format(extra_clauses, len(clauses), num_vars, proj_vars))
-        maybe_sat = True
-        tmp = tempfile.NamedTemporaryFile().name
-        normalize_cnf = True
-        if self.preprocessor:
-            logger.debug("Preprocessing")
-            ppmc = subprocess.Popen(self.preprocessor,stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.DEVNULL)
-            self.sub_procs.add(ppmc)
-            StreamWriter(ppmc.stdin).write_cnf(num_vars,clauses, normalize=True)
-            normalize_cnf = False
-            ppmc.stdin.close()
-            input = CnfReader.from_stream(ppmc.stdout,silent=True)
-            ppmc.wait()
-            ppmc.stdout.close()
-            self.sub_procs.remove(ppmc)
-            maybe_sat = input.maybe_sat
-            num_vars = input.num_vars
-            clauses = input.clauses
-        if maybe_sat and not self.interrupted:
-            with FileWriter(tmp) as fw:
-                fw.write_cnf(num_vars,clauses,normalize=normalize_cnf, proj_vars=proj_vars)
-                for i in range(0,128,1):
-                    if self.interrupted:
-                        break
-                    #if len(self.sat_solver) == 3:	#seed given
-                    #    self.sat_solver[2] = str(random.randrange(13423423471))
-                    added = []
-                    if len(self.sat_solver) > 1 and self.sat_solver[1] == "dpdb.py":
-                        added = ["sharpsat"]
-                    psat = subprocess.Popen(self.sat_solver + [tmp] + added, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-                    self.sub_procs.add(psat)
-                    output = self.sat_solver_parser_cls.from_stream(psat.stdout,**self.sat_solver_parser["args"])
-                    psat.wait()
-                    psat.stdout.close()
-                    self.sub_procs.remove(psat)
-                    result = getattr(output,self.sat_solver_parser["result"])
-                    if psat.returncode == 245 or psat.returncode == 250:
-                        logger.debug("Retrying call to external solver, returncode {}, index {}".format(psat.returncode, i))
-                    else:
-                        logger.debug("No Retry, returncode {}, result {}, index {}".format(psat.returncode, result, i))
-                        break
-        else:
-            result = 0
-        if result is None:
-            logger.warning("Result is None!")
-        return result
-
     def orig_vertex(self,vertex):
         return self.mg.orig_node(vertex)
 
