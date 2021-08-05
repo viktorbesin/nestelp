@@ -570,7 +570,7 @@ class ELPProblem(Problem):
                 return 0
             return (self.nested_problem.projected_count/self.nested_problem.model_count)
         else:
-            self.nested_problem.sat
+            return self.nested_problem.sat
 
 
     def solve(self, fallback=False):

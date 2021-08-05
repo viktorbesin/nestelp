@@ -152,6 +152,12 @@ def _get_main_atom(extra_atoms, atom):
             return keys[vals.index(val)]
     return -1
 
+def in_head(rules, atom):
+    for r in rules:
+        if atom in r['head']:
+            return True
+    return False
+
 def write_current_elp(rules, choice_rules, epistemic_atoms, epistemic_constraints, var_symbol_dict):
     def _get_symbol_for_atom(atom, head=False):
         if abs(atom) not in var_symbol_dict.keys():
